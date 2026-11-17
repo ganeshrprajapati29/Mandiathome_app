@@ -1,0 +1,58 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [main]
+    paths: ['app/**', '.github/workflows/build-apk.yml']
+  workflow_dispatch:
+    inputs:
+      api_host:
+        description: 'Backend URL baked into the app'
+        default: 'http://72.60.41.224:5055'
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.50.0'
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+      - run: flutter analyze --no-fatal-infos
+
+      - name: Build release APK
+        run: flutter build apk --release --dart-define=API_HOST=${{ github.event.inputs.api_host || 'http://72.60.41.224:5055' }}
+
+      - name: Rename APK
+        run: cp build/app/outputs/flutter-apk/app-release.apk build/MandiAtHome-v1.0.${{ github.run_number }}.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MandiAtHome-apk
+          path: app/build/MandiAtHome-v1.0.${{ github.run_number }}.apk
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: Mandi At Home v1.0.${{ github.run_number }}
+          body: |
+            Android APK for Mandi At Home (API: ${{ github.event.inputs.api_host || 'http://72.60.41.224:5055' }}).
+            Download the .apk below and install it on your phone.
+          files: app/build/MandiAtHome-v1.0.${{ github.run_number }}.apk

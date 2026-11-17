@@ -95,11 +95,11 @@ class AccountScreen extends StatelessWidget {
               if (!context.mounted) return;
               context.read<CartProvider>().reset();
               context.read<StoreProvider>().loadWishlist();
-              showSnack(context, 'Logged out');
+              // MainShell notices the logout and returns to the login screen.
             }, color: AppColors.danger),
           ]),
         const SizedBox(height: 20),
-        Center(child: Image.asset('assets/images/logo.png', width: 90)),
+        Center(child: Image.asset('assets/images/logo_wide.png', width: 130)),
         const Center(child: Text('Version 1.0.0', style: TextStyle(color: AppColors.textMuted, fontSize: 12))),
         const SizedBox(height: 30),
       ]),

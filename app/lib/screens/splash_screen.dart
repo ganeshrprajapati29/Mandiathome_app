@@ -7,6 +7,7 @@ import '../providers/auth_provider.dart';
 import '../providers/cart_provider.dart';
 import '../providers/store_provider.dart';
 import '../theme/app_theme.dart';
+import 'auth_screens.dart';
 import 'main_shell.dart';
 import 'onboarding_screen.dart';
 
@@ -23,7 +24,8 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
   static const _veggies = ['🥕', '🍅', '🥦', '🍎', '🍌', '🥭', '🍇', '🌽', '🍆', '🥬', '🍋', '🍉'];
   final _rnd = Random(7);
-  late final List<_Drop> _drops = List.generate(14, (i) => _Drop(_veggies[i % _veggies.length], _rnd.nextDouble(), .05 + _rnd.nextDouble() * .35, 22 + _rnd.nextDouble() * 16));
+  late final List<_Drop> _drops =
+      List.generate(14, (i) => _Drop(_veggies[i % _veggies.length], _rnd.nextDouble(), .05 + _rnd.nextDouble() * .35, 22 + _rnd.nextDouble() * 16));
 
   @override
   void initState() {
@@ -46,7 +48,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
     final seen = sp.getBool('onboarding_seen') ?? false;
     Navigator.of(context).pushReplacement(PageRouteBuilder(
       transitionDuration: const Duration(milliseconds: 600),
-      pageBuilder: (_, __, ___) => seen ? const MainShell() : const OnboardingScreen(),
+      pageBuilder: (_, __, ___) => !seen ? const OnboardingScreen() : (auth.isLoggedIn ? const MainShell() : const LoginScreen(gate: true)),
       transitionsBuilder: (_, a, __, child) => FadeTransition(opacity: a, child: child),
     ));
   }

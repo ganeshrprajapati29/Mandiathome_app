@@ -57,7 +57,8 @@ class ProductImage extends StatelessWidget {
         width: size,
         height: size,
         fit: BoxFit.cover,
-        placeholder: (_, __) => Shimmer.fromColors(baseColor: Colors.grey.shade200, highlightColor: Colors.white, child: Container(width: size, height: size, color: Colors.white)),
+        placeholder: (_, __) =>
+            Shimmer.fromColors(baseColor: Colors.grey.shade200, highlightColor: Colors.white, child: Container(width: size, height: size, color: Colors.white)),
         errorWidget: (_, __, ___) => fallback,
       ),
     );

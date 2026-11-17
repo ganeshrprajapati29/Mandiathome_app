@@ -25,7 +25,16 @@ class Variant {
   final double quantity, mrp, price;
   final int stock, maxPerOrder;
   final bool isDefault;
-  Variant({required this.id, required this.label, required this.unit, required this.quantity, required this.mrp, required this.price, required this.stock, required this.maxPerOrder, required this.isDefault});
+  Variant(
+      {required this.id,
+      required this.label,
+      required this.unit,
+      required this.quantity,
+      required this.mrp,
+      required this.price,
+      required this.stock,
+      required this.maxPerOrder,
+      required this.isDefault});
   factory Variant.fromJson(Map<String, dynamic> j) => Variant(
         id: _id(j['_id']),
         label: j['label'] ?? '',
@@ -58,10 +67,26 @@ class Product {
   final double rating;
   final int ratingCount;
   Product({
-    required this.id, required this.name, this.hindiName, this.description, this.emoji, this.origin, this.shelfLife, this.storageTips,
-    this.categoryName, this.subCategoryName, this.categoryId, this.subCategoryId,
-    this.images = const [], this.tags = const [], required this.variants,
-    this.isOrganic = false, this.isFeatured = false, this.isBestSeller = false, this.rating = 0, this.ratingCount = 0,
+    required this.id,
+    required this.name,
+    this.hindiName,
+    this.description,
+    this.emoji,
+    this.origin,
+    this.shelfLife,
+    this.storageTips,
+    this.categoryName,
+    this.subCategoryName,
+    this.categoryId,
+    this.subCategoryId,
+    this.images = const [],
+    this.tags = const [],
+    required this.variants,
+    this.isOrganic = false,
+    this.isFeatured = false,
+    this.isBestSeller = false,
+    this.rating = 0,
+    this.ratingCount = 0,
   });
   factory Product.fromJson(Map<String, dynamic> j) => Product(
         id: _id(j['_id']),
@@ -95,7 +120,12 @@ class BannerItem {
   final String? subtitle, image, emoji, bgColor, categoryId;
   BannerItem({required this.id, required this.title, this.subtitle, this.image, this.emoji, this.bgColor, this.categoryId});
   factory BannerItem.fromJson(Map<String, dynamic> j) => BannerItem(
-        id: _id(j['_id']), title: j['title'] ?? '', subtitle: j['subtitle'], image: j['image'], emoji: j['emoji'], bgColor: j['bgColor'],
+        id: _id(j['_id']),
+        title: j['title'] ?? '',
+        subtitle: j['subtitle'],
+        image: j['image'],
+        emoji: j['emoji'],
+        bgColor: j['bgColor'],
         categoryId: j['category'] == null ? null : _id(j['category']),
       );
 }
@@ -105,7 +135,15 @@ class StoreSettings {
   final List<String> deliverySlots;
   final bool codEnabled, isStoreOpen;
   final String supportPhone, supportEmail;
-  StoreSettings({this.deliveryFee = 30, this.freeDeliveryAbove = 299, this.minOrderAmount = 99, this.deliverySlots = const [], this.codEnabled = true, this.isStoreOpen = true, this.supportPhone = '', this.supportEmail = ''});
+  StoreSettings(
+      {this.deliveryFee = 30,
+      this.freeDeliveryAbove = 299,
+      this.minOrderAmount = 99,
+      this.deliverySlots = const [],
+      this.codEnabled = true,
+      this.isStoreOpen = true,
+      this.supportPhone = '',
+      this.supportEmail = ''});
   factory StoreSettings.fromJson(Map<String, dynamic> j) => StoreSettings(
         deliveryFee: _d(j['deliveryFee']),
         freeDeliveryAbove: _d(j['freeDeliveryAbove']),
@@ -130,7 +168,14 @@ class HomeData {
   final List<Product> featured, bestSellers, organic;
   final List<HomeSection> sections;
   final StoreSettings settings;
-  HomeData({required this.banners, required this.categories, required this.featured, required this.bestSellers, required this.organic, required this.sections, required this.settings});
+  HomeData(
+      {required this.banners,
+      required this.categories,
+      required this.featured,
+      required this.bestSellers,
+      required this.organic,
+      required this.sections,
+      required this.settings});
   factory HomeData.fromJson(Map<String, dynamic> j) {
     List<Product> p(String k) => (j[k] as List? ?? []).map((e) => Product.fromJson(e)).toList();
     return HomeData(
@@ -152,15 +197,36 @@ class CartLine {
   final String? emoji, image;
   final double price, mrp, total;
   final int qty, stock, maxPerOrder;
-  CartLine({required this.productId, required this.variantId, required this.name, required this.variantLabel, this.emoji, this.image, required this.price, required this.mrp, required this.total, required this.qty, required this.stock, required this.maxPerOrder});
+  CartLine(
+      {required this.productId,
+      required this.variantId,
+      required this.name,
+      required this.variantLabel,
+      this.emoji,
+      this.image,
+      required this.price,
+      required this.mrp,
+      required this.total,
+      required this.qty,
+      required this.stock,
+      required this.maxPerOrder});
   factory CartLine.fromJson(Map<String, dynamic> j) {
     final p = j['product'] ?? {};
     final v = j['variant'] ?? {};
     final imgs = (p['images'] as List? ?? []);
     return CartLine(
-      productId: _id(p['_id']), variantId: _id(v['_id']), name: p['name'] ?? '', variantLabel: v['label'] ?? '',
-      emoji: p['emoji'], image: imgs.isNotEmpty ? '${imgs.first}' : null,
-      price: _d(v['price']), mrp: _d(v['mrp']), total: _d(j['total']), qty: _i(j['qty']), stock: _i(v['stock']), maxPerOrder: _i(v['maxPerOrder']),
+      productId: _id(p['_id']),
+      variantId: _id(v['_id']),
+      name: p['name'] ?? '',
+      variantLabel: v['label'] ?? '',
+      emoji: p['emoji'],
+      image: imgs.isNotEmpty ? '${imgs.first}' : null,
+      price: _d(v['price']),
+      mrp: _d(v['mrp']),
+      total: _d(j['total']),
+      qty: _i(j['qty']),
+      stock: _i(v['stock']),
+      maxPerOrder: _i(v['maxPerOrder']),
     );
   }
 }
@@ -171,7 +237,22 @@ class CartSummary {
   final double itemsTotal, mrpTotal, savings, couponDiscount, deliveryFee, handlingFee, grandTotal, freeDeliveryAbove, amountForFreeDelivery, minOrderAmount;
   final String? coupon, couponMessage;
   final List<String> warnings;
-  CartSummary({this.items = const [], this.count = 0, this.itemsTotal = 0, this.mrpTotal = 0, this.savings = 0, this.couponDiscount = 0, this.deliveryFee = 0, this.handlingFee = 0, this.grandTotal = 0, this.freeDeliveryAbove = 0, this.amountForFreeDelivery = 0, this.minOrderAmount = 0, this.coupon, this.couponMessage, this.warnings = const []});
+  CartSummary(
+      {this.items = const [],
+      this.count = 0,
+      this.itemsTotal = 0,
+      this.mrpTotal = 0,
+      this.savings = 0,
+      this.couponDiscount = 0,
+      this.deliveryFee = 0,
+      this.handlingFee = 0,
+      this.grandTotal = 0,
+      this.freeDeliveryAbove = 0,
+      this.amountForFreeDelivery = 0,
+      this.minOrderAmount = 0,
+      this.coupon,
+      this.couponMessage,
+      this.warnings = const []});
   factory CartSummary.fromJson(Map<String, dynamic> j) => CartSummary(
         items: (j['items'] as List? ?? []).map((e) => CartLine.fromJson(e)).toList(),
         count: _i(j['count']),
@@ -194,14 +275,51 @@ class CartSummary {
 class Address {
   final String id, label, name, phone, line1, city, pincode;
   final String? line2, landmark, state;
+  final double? lat, lng;
   final bool isDefault;
-  Address({required this.id, required this.label, required this.name, required this.phone, required this.line1, required this.city, required this.pincode, this.line2, this.landmark, this.state, this.isDefault = false});
+  Address(
+      {required this.id,
+      required this.label,
+      required this.name,
+      required this.phone,
+      required this.line1,
+      required this.city,
+      required this.pincode,
+      this.line2,
+      this.landmark,
+      this.state,
+      this.lat,
+      this.lng,
+      this.isDefault = false});
+  bool get hasLocation => lat != null && lng != null && (lat != 0 || lng != 0);
   factory Address.fromJson(Map<String, dynamic> j) => Address(
-        id: _id(j['_id']), label: j['label'] ?? 'Home', name: j['name'] ?? '', phone: j['phone'] ?? '', line1: j['line1'] ?? '',
-        city: j['city'] ?? '', pincode: j['pincode'] ?? '', line2: j['line2'], landmark: j['landmark'], state: j['state'], isDefault: j['isDefault'] == true,
+        id: _id(j['_id']),
+        label: j['label'] ?? 'Home',
+        name: j['name'] ?? '',
+        phone: j['phone'] ?? '',
+        line1: j['line1'] ?? '',
+        city: j['city'] ?? '',
+        pincode: j['pincode'] ?? '',
+        line2: j['line2'],
+        landmark: j['landmark'],
+        state: j['state'],
+        isDefault: j['isDefault'] == true,
+        lat: j['lat'] == null ? null : _d(j['lat']),
+        lng: j['lng'] == null ? null : _d(j['lng']),
       );
   Map<String, dynamic> toJson() => {
-        'label': label, 'name': name, 'phone': phone, 'line1': line1, 'line2': line2, 'landmark': landmark, 'city': city, 'state': state, 'pincode': pincode, 'isDefault': isDefault,
+        'label': label,
+        'name': name,
+        'phone': phone,
+        'line1': line1,
+        'line2': line2,
+        'landmark': landmark,
+        'city': city,
+        'state': state,
+        'pincode': pincode,
+        'isDefault': isDefault,
+        if (lat != null) 'lat': lat,
+        if (lng != null) 'lng': lng,
       };
   String get full => [line1, line2, landmark, '$city - $pincode'].where((e) => e != null && e.isNotEmpty).join(', ');
 }
@@ -211,10 +329,17 @@ class OrderItem {
   final String? emoji, image;
   final double price, mrp, total;
   final int qty;
-  OrderItem({required this.name, required this.variantLabel, this.emoji, this.image, required this.price, required this.mrp, required this.total, required this.qty});
+  OrderItem(
+      {required this.name, required this.variantLabel, this.emoji, this.image, required this.price, required this.mrp, required this.total, required this.qty});
   factory OrderItem.fromJson(Map<String, dynamic> j) => OrderItem(
-        name: j['name'] ?? '', variantLabel: j['variantLabel'] ?? '', emoji: j['emoji'], image: j['image'],
-        price: _d(j['price']), mrp: _d(j['mrp']), total: _d(j['total']), qty: _i(j['qty']),
+        name: j['name'] ?? '',
+        variantLabel: j['variantLabel'] ?? '',
+        emoji: j['emoji'],
+        image: j['image'],
+        price: _d(j['price']),
+        mrp: _d(j['mrp']),
+        total: _d(j['total']),
+        qty: _i(j['qty']),
       );
 }
 
@@ -233,7 +358,27 @@ class Order {
   final String? couponCode, slotDate, slot, cancelReason;
   final DateTime createdAt;
   final List<StatusEvent> history;
-  Order({required this.id, required this.orderNo, required this.status, required this.paymentMethod, required this.paymentStatus, required this.items, this.address, required this.itemsTotal, required this.mrpTotal, required this.savings, required this.couponDiscount, required this.deliveryFee, required this.handlingFee, required this.grandTotal, this.couponCode, this.slotDate, this.slot, this.cancelReason, required this.createdAt, this.history = const []});
+  Order(
+      {required this.id,
+      required this.orderNo,
+      required this.status,
+      required this.paymentMethod,
+      required this.paymentStatus,
+      required this.items,
+      this.address,
+      required this.itemsTotal,
+      required this.mrpTotal,
+      required this.savings,
+      required this.couponDiscount,
+      required this.deliveryFee,
+      required this.handlingFee,
+      required this.grandTotal,
+      this.couponCode,
+      this.slotDate,
+      this.slot,
+      this.cancelReason,
+      required this.createdAt,
+      this.history = const []});
   factory Order.fromJson(Map<String, dynamic> j) => Order(
         id: _id(j['_id']),
         orderNo: j['orderNo'] ?? '',

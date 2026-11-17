@@ -50,7 +50,8 @@ class HomeScreen extends StatelessWidget {
               SliverPadding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 sliver: SliverGrid(
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 4, mainAxisSpacing: 12, crossAxisSpacing: 10, childAspectRatio: .72),
+                  gridDelegate:
+                      const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 4, mainAxisSpacing: 12, crossAxisSpacing: 10, childAspectRatio: .72),
                   delegate: SliverChildBuilderDelegate((_, i) => _CategoryTile(category: _subcats(home)[i]), childCount: _subcats(home).length.clamp(0, 12)),
                 ),
               ),
@@ -66,7 +67,8 @@ class HomeScreen extends StatelessWidget {
               ],
               if (home.bestSellers.isNotEmpty) ...[
                 SliverToBoxAdapter(
-                  child: SectionHeader(title: '🔥 Best Sellers', subtitle: 'Most loved by our customers', onSeeAll: () => _openList(context, 'Best Sellers', bestSeller: true)),
+                  child: SectionHeader(
+                      title: '🔥 Best Sellers', subtitle: 'Most loved by our customers', onSeeAll: () => _openList(context, 'Best Sellers', bestSeller: true)),
                 ),
                 SliverToBoxAdapter(child: ProductRail(products: home.bestSellers)),
               ],
@@ -82,7 +84,9 @@ class HomeScreen extends StatelessWidget {
                 SliverToBoxAdapter(child: ProductRail(products: s.products)),
               ],
               if (home.organic.isNotEmpty) ...[
-                SliverToBoxAdapter(child: SectionHeader(title: '🌿 Go Organic', subtitle: 'Chemical-free & healthy', onSeeAll: () => _openList(context, 'Organic', organic: true))),
+                SliverToBoxAdapter(
+                    child: SectionHeader(
+                        title: '🌿 Go Organic', subtitle: 'Chemical-free & healthy', onSeeAll: () => _openList(context, 'Organic', organic: true))),
                 SliverToBoxAdapter(child: ProductRail(products: home.organic)),
               ],
               const SliverToBoxAdapter(child: _Footer()),
@@ -205,17 +209,17 @@ class _RotatingHintState extends State<_RotatingHint> {
         Expanded(
           child: ClipRect(
             child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 400),
-            transitionBuilder: (c, a) => SlideTransition(
-              position: Tween(begin: const Offset(0, 1), end: Offset.zero).animate(a),
-              child: FadeTransition(opacity: a, child: c),
+              duration: const Duration(milliseconds: 400),
+              transitionBuilder: (c, a) => SlideTransition(
+                position: Tween(begin: const Offset(0, 1), end: Offset.zero).animate(a),
+                child: FadeTransition(opacity: a, child: c),
+              ),
+              child: Align(
+                key: ValueKey(_i),
+                alignment: Alignment.centerLeft,
+                child: Text(_hints[_i], style: const TextStyle(color: AppColors.textMuted)),
+              ),
             ),
-            child: Align(
-              key: ValueKey(_i),
-              alignment: Alignment.centerLeft,
-              child: Text(_hints[_i], style: const TextStyle(color: AppColors.textMuted)),
-            ),
-          ),
           ),
         ),
       ]);
@@ -366,7 +370,8 @@ class _CategoryTile extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         final parent = category.parentId == null ? category : store.categories.firstWhere((c) => c.id == category.parentId, orElse: () => category);
-        Navigator.push(context, MaterialPageRoute(builder: (_) => CategoryProductsScreen(category: parent, initialSubId: category.parentId == null ? null : category.id)));
+        Navigator.push(
+            context, MaterialPageRoute(builder: (_) => CategoryProductsScreen(category: parent, initialSubId: category.parentId == null ? null : category.id)));
       },
       child: Column(children: [
         AspectRatio(
@@ -384,7 +389,11 @@ class _CategoryTile extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 6),
-        Text(category.name, textAlign: TextAlign.center, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, height: 1.2)),
+        Text(category.name,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, height: 1.2)),
       ]),
     );
   }

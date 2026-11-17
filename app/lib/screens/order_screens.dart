@@ -5,6 +5,7 @@ import '../models/models.dart';
 import '../providers/store_provider.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common.dart';
+import '../widgets/osm_map.dart';
 
 Color statusColor(String s) => switch (s) {
       'placed' => const Color(0xFF1565C0),
@@ -46,14 +47,23 @@ class _OrdersScreenState extends State<OrdersScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('My Orders')),
       body: _error != null
-          ? ErrorRetry(message: _error!, onRetry: () {
-              setState(() => _error = null);
-              _load();
-            })
+          ? ErrorRetry(
+              message: _error!,
+              onRetry: () {
+                setState(() => _error = null);
+                _load();
+              })
           : _orders == null
-              ? ListView(padding: const EdgeInsets.all(16), children: List.generate(4, (_) => const Padding(padding: EdgeInsets.only(bottom: 12), child: ShimmerBox(height: 120))))
+              ? ListView(
+                  padding: const EdgeInsets.all(16),
+                  children: List.generate(4, (_) => const Padding(padding: EdgeInsets.only(bottom: 12), child: ShimmerBox(height: 120))))
               : _orders!.isEmpty
-                  ? EmptyState(emoji: '🧾', title: 'No orders yet', message: 'Your orders will appear here once you place one.', actionLabel: 'Shop now', onAction: () => Navigator.pop(context))
+                  ? EmptyState(
+                      emoji: '🧾',
+                      title: 'No orders yet',
+                      message: 'Your orders will appear here once you place one.',
+                      actionLabel: 'Shop now',
+                      onAction: () => Navigator.pop(context))
                   : RefreshIndicator(
                       onRefresh: _load,
                       child: ListView.separated(
@@ -71,13 +81,15 @@ class _OrdersScreenState extends State<OrdersScreen> {
                             },
                             child: Container(
                               padding: const EdgeInsets.all(14),
-                              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18), border: Border.all(color: AppColors.border)),
+                              decoration:
+                                  BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(18), border: Border.all(color: AppColors.border)),
                               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                                 Row(children: [
                                   Expanded(
                                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                                       Text('#${o.orderNo}', style: const TextStyle(fontWeight: FontWeight.w700)),
-                                      Text(DateFormat('d MMM yyyy, h:mm a').format(o.createdAt), style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
+                                      Text(DateFormat('d MMM yyyy, h:mm a').format(o.createdAt),
+                                          style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
                                     ]),
                                   ),
                                   Container(
@@ -91,7 +103,12 @@ class _OrdersScreenState extends State<OrdersScreen> {
                                   height: 44,
                                   child: ListView(
                                     scrollDirection: Axis.horizontal,
-                                    children: o.items.take(6).map((it) => Padding(padding: const EdgeInsets.only(right: 6), child: ProductImage(url: it.image, emoji: it.emoji, size: 44, radius: 10))).toList(),
+                                    children: o.items
+                                        .take(6)
+                                        .map((it) => Padding(
+                                            padding: const EdgeInsets.only(right: 6),
+                                            child: ProductImage(url: it.image, emoji: it.emoji, size: 44, radius: 10)))
+                                        .toList(),
                                   ),
                                 ),
                                 const Divider(height: 22),
@@ -210,6 +227,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   _box(Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     const Text('Delivery details', style: TextStyle(fontWeight: FontWeight.w700)),
                     const SizedBox(height: 8),
+                    if (o.address!.hasLocation) ...[
+                      MapPreview(lat: o.address!.lat!, lng: o.address!.lng!, height: 130),
+                      const SizedBox(height: 10),
+                    ],
                     Text('${o.address!.name} • ${o.address!.phone}', style: const TextStyle(fontWeight: FontWeight.w500)),
                     Text(o.address!.full, style: const TextStyle(color: AppColors.textMuted, height: 1.4)),
                     if (o.slot != null) ...[
@@ -218,7 +239,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     ],
                   ])),
                 const SizedBox(height: 16),
-                if (o.canCancel) OutlinedButton(style: OutlinedButton.styleFrom(foregroundColor: AppColors.danger, side: const BorderSide(color: AppColors.danger)), onPressed: _cancel, child: const Text('Cancel Order')),
+                if (o.canCancel)
+                  OutlinedButton(
+                      style: OutlinedButton.styleFrom(foregroundColor: AppColors.danger, side: const BorderSide(color: AppColors.danger)),
+                      onPressed: _cancel,
+                      child: const Text('Cancel Order')),
                 const SizedBox(height: 24),
               ]),
             ),
@@ -288,7 +313,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 child: Padding(
                   padding: EdgeInsets.only(top: 6, bottom: last ? 0 : 18),
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(orderStatusLabels[_flow[i]]!, style: TextStyle(fontWeight: done ? FontWeight.w700 : FontWeight.w500, color: done ? AppColors.text : AppColors.textMuted)),
+                    Text(orderStatusLabels[_flow[i]]!,
+                        style: TextStyle(fontWeight: done ? FontWeight.w700 : FontWeight.w500, color: done ? AppColors.text : AppColors.textMuted)),
                     if (t != null) Text(DateFormat('d MMM, h:mm a').format(t), style: const TextStyle(fontSize: 11.5, color: AppColors.textMuted)),
                   ]),
                 ),

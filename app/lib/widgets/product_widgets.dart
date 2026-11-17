@@ -72,8 +72,10 @@ class AddToCartButton extends StatelessWidget {
                   child: Center(
                     child: AnimatedSwitcher(
                       duration: const Duration(milliseconds: 180),
-                      transitionBuilder: (c, a) => SlideTransition(position: Tween(begin: const Offset(0, .5), end: Offset.zero).animate(a), child: FadeTransition(opacity: a, child: c)),
-                      child: Text('$qty', key: ValueKey(qty), style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: height > 40 ? 17 : 14)),
+                      transitionBuilder: (c, a) => SlideTransition(
+                          position: Tween(begin: const Offset(0, .5), end: Offset.zero).animate(a), child: FadeTransition(opacity: a, child: c)),
+                      child:
+                          Text('$qty', key: ValueKey(qty), style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: height > 40 ? 17 : 14)),
                     ),
                   ),
                 ),
@@ -231,7 +233,8 @@ class ProductCard extends StatelessWidget {
             Expanded(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text(rupee(v.price), style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
-                if (v.mrp > v.price) Text(rupee(v.mrp), style: const TextStyle(fontSize: 11, color: AppColors.textMuted, decoration: TextDecoration.lineThrough)),
+                if (v.mrp > v.price)
+                  Text(rupee(v.mrp), style: const TextStyle(fontSize: 11, color: AppColors.textMuted, decoration: TextDecoration.lineThrough)),
               ]),
             ),
             multi ? _MultiAdd(product: product) : AddToCartButton(product: product, variant: v, height: 32).sized(76),

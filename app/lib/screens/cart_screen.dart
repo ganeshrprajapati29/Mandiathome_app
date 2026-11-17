@@ -51,7 +51,12 @@ class _CartScreenState extends State<CartScreen> {
     } else if (s.items.isEmpty) {
       body = cart.loading
           ? const Center(child: CircularProgressIndicator())
-          : EmptyState(emoji: '🧺', title: 'Your basket is empty', message: 'Fresh fruits & vegetables are waiting for you!', actionLabel: 'Start Shopping', onAction: _shop);
+          : EmptyState(
+              emoji: '🧺',
+              title: 'Your basket is empty',
+              message: 'Fresh fruits & vegetables are waiting for you!',
+              actionLabel: 'Start Shopping',
+              onAction: _shop);
     } else {
       body = RefreshIndicator(
         onRefresh: cart.load,
@@ -87,7 +92,9 @@ class _CartScreenState extends State<CartScreen> {
               child: Row(children: [
                 const Text('🎉', style: TextStyle(fontSize: 22)),
                 const SizedBox(width: 10),
-                Expanded(child: Text('You are saving ${rupee(s.savings)} on this order!', style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF1565C0)))),
+                Expanded(
+                    child: Text('You are saving ${rupee(s.savings)} on this order!',
+                        style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF1565C0)))),
               ]),
             ),
           ],
@@ -128,7 +135,8 @@ class _CartScreenState extends State<CartScreen> {
           ? null
           : Container(
               padding: EdgeInsets.fromLTRB(16, 12, 16, 12 + (widget.embedded ? 0 : MediaQuery.of(context).padding.bottom)),
-              decoration: BoxDecoration(color: Colors.white, boxShadow: [BoxShadow(color: Colors.black.withOpacity(.06), blurRadius: 16, offset: const Offset(0, -4))]),
+              decoration:
+                  BoxDecoration(color: Colors.white, boxShadow: [BoxShadow(color: Colors.black.withOpacity(.06), blurRadius: 16, offset: const Offset(0, -4))]),
               child: Row(children: [
                 Expanded(
                   child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -141,11 +149,14 @@ class _CartScreenState extends State<CartScreen> {
                   child: ElevatedButton(
                     onPressed: () {
                       if (s.itemsTotal < s.minOrderAmount) {
-                        return showSnack(context, 'Minimum order is ${rupee(s.minOrderAmount)}. Add ${rupee(s.minOrderAmount - s.itemsTotal)} more.', error: true);
+                        return showSnack(context, 'Minimum order is ${rupee(s.minOrderAmount)}. Add ${rupee(s.minOrderAmount - s.itemsTotal)} more.',
+                            error: true);
                       }
                       Navigator.push(context, MaterialPageRoute(builder: (_) => const CheckoutScreen()));
                     },
-                    child: const Row(mainAxisAlignment: MainAxisAlignment.center, children: [Text('Proceed to Checkout'), SizedBox(width: 6), Icon(Icons.arrow_forward, size: 18)]),
+                    child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [Text('Proceed to Checkout'), SizedBox(width: 6), Icon(Icons.arrow_forward, size: 18)]),
                   ),
                 ),
               ]),
@@ -286,7 +297,9 @@ class _CouponCard extends StatelessWidget {
             const Text('Apply Coupon', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
             const SizedBox(height: 12),
             Row(children: [
-              Expanded(child: TextField(controller: ctrl, textCapitalization: TextCapitalization.characters, decoration: const InputDecoration(hintText: 'Enter coupon code'))),
+              Expanded(
+                  child: TextField(
+                      controller: ctrl, textCapitalization: TextCapitalization.characters, decoration: const InputDecoration(hintText: 'Enter coupon code'))),
               const SizedBox(width: 10),
               SizedBox(width: 90, child: ElevatedButton(onPressed: () => apply(ctrl.text.trim()), child: const Text('Apply'))),
             ]),
@@ -305,14 +318,18 @@ class _CouponCard extends StatelessWidget {
                     child: Row(children: [
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(color: AppColors.soft, borderRadius: BorderRadius.circular(8), border: Border.all(color: AppColors.primary, style: BorderStyle.solid)),
+                        decoration: BoxDecoration(
+                            color: AppColors.soft,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: AppColors.primary, style: BorderStyle.solid)),
                         child: Text(c.code, style: const TextStyle(fontWeight: FontWeight.w800, color: AppColors.primary, letterSpacing: 1)),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                           Text(c.description ?? '', style: const TextStyle(fontSize: 12.5)),
-                          if (!ok) Text('Add ${rupee(c.minOrder - s.itemsTotal)} more to unlock', style: const TextStyle(fontSize: 11, color: AppColors.accent)),
+                          if (!ok)
+                            Text('Add ${rupee(c.minOrder - s.itemsTotal)} more to unlock', style: const TextStyle(fontSize: 11, color: AppColors.accent)),
                         ]),
                       ),
                       TextButton(onPressed: ok ? () => apply(c.code) : null, child: const Text('APPLY')),

@@ -58,7 +58,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(color: AppColors.soft, borderRadius: BorderRadius.circular(12)),
-                      child: const Row(children: [Icon(Icons.add_location_alt_outlined, color: AppColors.primary), SizedBox(width: 10), Text('Add a delivery address')]),
+                      child: const Row(
+                          children: [Icon(Icons.add_location_alt_outlined, color: AppColors.primary), SizedBox(width: 10), Text('Add a delivery address')]),
                     ),
                   )
                 : Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -90,7 +91,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                           border: Border.all(color: sel ? AppColors.primary : AppColors.border),
                         ),
                         child: Column(children: [
-                          Text(i == 0 ? 'Today' : i == 1 ? 'Tomorrow' : DateFormat('EEE').format(d),
+                          Text(
+                              i == 0
+                                  ? 'Today'
+                                  : i == 1
+                                      ? 'Tomorrow'
+                                      : DateFormat('EEE').format(d),
                               style: TextStyle(fontWeight: FontWeight.w700, color: sel ? Colors.white : AppColors.text)),
                           Text(DateFormat('d MMM').format(d), style: TextStyle(fontSize: 12, color: sel ? Colors.white70 : AppColors.textMuted)),
                         ]),
@@ -130,7 +136,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       ]),
       bottomNavigationBar: Container(
         padding: EdgeInsets.fromLTRB(16, 12, 16, 12 + MediaQuery.of(context).padding.bottom),
-        decoration: BoxDecoration(color: Colors.white, boxShadow: [BoxShadow(color: Colors.black.withOpacity(.06), blurRadius: 16, offset: const Offset(0, -4))]),
+        decoration:
+            BoxDecoration(color: Colors.white, boxShadow: [BoxShadow(color: Colors.black.withOpacity(.06), blurRadius: 16, offset: const Offset(0, -4))]),
         child: ElevatedButton(
           onPressed: _placing ? null : () => _place(address),
           child: _placing
@@ -231,7 +238,8 @@ class OrderSuccessScreen extends StatefulWidget {
 class _OrderSuccessScreenState extends State<OrderSuccessScreen> with SingleTickerProviderStateMixin {
   late final AnimationController _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 2200))..forward();
   final _rnd = Random();
-  late final _bits = List.generate(26, (i) => (['🥕', '🍅', '🍎', '🥦', '🍌', '🎉', '✨', '🥭'][i % 8], _rnd.nextDouble() * 2 * pi, 120 + _rnd.nextDouble() * 160));
+  late final _bits =
+      List.generate(26, (i) => (['🥕', '🍅', '🍎', '🥦', '🍌', '🎉', '✨', '🥭'][i % 8], _rnd.nextDouble() * 2 * pi, 120 + _rnd.nextDouble() * 160));
 
   @override
   void dispose() {

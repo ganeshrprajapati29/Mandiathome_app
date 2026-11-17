@@ -96,10 +96,15 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
               child: ListView(
                 padding: const EdgeInsets.only(bottom: 100),
                 children: [
-                  _SideItem(label: 'All', emoji: widget.category.emoji ?? '🛒', color: widget.category.color, selected: _sub == null, onTap: () {
-                    _sub = null;
-                    _load();
-                  }),
+                  _SideItem(
+                      label: 'All',
+                      emoji: widget.category.emoji ?? '🛒',
+                      color: widget.category.color,
+                      selected: _sub == null,
+                      onTap: () {
+                        _sub = null;
+                        _load();
+                      }),
                   ...subs.map((s) => _SideItem(
                         label: s.name,
                         emoji: s.emoji ?? '🥬',
@@ -176,7 +181,9 @@ class _SideItem extends StatelessWidget {
               height: 54,
               decoration: BoxDecoration(color: AppColors.fromHex(color), shape: BoxShape.circle),
               alignment: Alignment.center,
-              child: (image ?? '').isNotEmpty ? ClipOval(child: ProductImage(url: image, emoji: emoji, size: 54, radius: 27)) : Text(emoji, style: const TextStyle(fontSize: 26)),
+              child: (image ?? '').isNotEmpty
+                  ? ClipOval(child: ProductImage(url: image, emoji: emoji, size: 54, radius: 27))
+                  : Text(emoji, style: const TextStyle(fontSize: 26)),
             ),
           ),
           const SizedBox(height: 5),
@@ -184,7 +191,8 @@ class _SideItem extends StatelessWidget {
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 11, height: 1.2, fontWeight: selected ? FontWeight.w700 : FontWeight.w500, color: selected ? AppColors.primary : AppColors.text)),
+              style: TextStyle(
+                  fontSize: 11, height: 1.2, fontWeight: selected ? FontWeight.w700 : FontWeight.w500, color: selected ? AppColors.primary : AppColors.text)),
         ]),
       ),
     );

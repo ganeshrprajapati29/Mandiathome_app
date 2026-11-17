@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/app_theme.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
+import 'auth_screens.dart';
 import 'main_shell.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -23,7 +26,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final sp = await SharedPreferences.getInstance();
     await sp.setBool('onboarding_seen', true);
     if (!mounted) return;
-    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const MainShell()));
+    Navigator.of(context)
+        .pushReplacement(MaterialPageRoute(builder: (_) => context.read<AuthProvider>().isLoggedIn ? const MainShell() : const LoginScreen(gate: true)));
   }
 
   @override

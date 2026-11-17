@@ -176,7 +176,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         Positioned(
                           right: -4,
                           top: -4,
-                          child: CircleAvatar(radius: 10, backgroundColor: AppColors.primary, child: Text('$inCart', style: const TextStyle(color: Colors.white, fontSize: 10))),
+                          child: CircleAvatar(
+                              radius: 10,
+                              backgroundColor: AppColors.primary,
+                              child: Text('$inCart', style: const TextStyle(color: Colors.white, fontSize: 10))),
                         ),
                     ]),
                   ),
@@ -193,7 +196,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               const SizedBox(height: 14),
               if ((p.description ?? '').isNotEmpty) _info('About this product', Icons.info_outline, p.description!, initiallyExpanded: true),
               if ((p.storageTips ?? '').isNotEmpty) _info('Storage tips', Icons.kitchen_outlined, p.storageTips!),
-              _info('Details', Icons.list_alt, ['Origin: ${p.origin ?? 'Local mandi'}', 'Shelf life: ${p.shelfLife ?? '2-4 days'}', 'Unit: ${v.label}'].join('\n')),
+              _info('Details', Icons.list_alt,
+                  ['Origin: ${p.origin ?? 'Local mandi'}', 'Shelf life: ${p.shelfLife ?? '2-4 days'}', 'Unit: ${v.label}'].join('\n')),
             ]),
           ),
         ),
@@ -205,7 +209,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       ]),
       bottomNavigationBar: Container(
         padding: EdgeInsets.fromLTRB(20, 12, 20, 12 + MediaQuery.of(context).padding.bottom),
-        decoration: BoxDecoration(color: Colors.white, boxShadow: [BoxShadow(color: Colors.black.withOpacity(.06), blurRadius: 16, offset: const Offset(0, -4))]),
+        decoration:
+            BoxDecoration(color: Colors.white, boxShadow: [BoxShadow(color: Colors.black.withOpacity(.06), blurRadius: 16, offset: const Offset(0, -4))]),
         child: Row(children: [
           Expanded(
             child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -230,7 +235,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
             onTap: onTap,
             child: Padding(
               padding: const EdgeInsets.all(8),
-              child: Badge(isLabelVisible: badge > 0, label: Text('$badge'), backgroundColor: AppColors.accent, child: Icon(icon, size: 21, color: color ?? AppColors.text)),
+              child: Badge(
+                  isLabelVisible: badge > 0,
+                  label: Text('$badge'),
+                  backgroundColor: AppColors.accent,
+                  child: Icon(icon, size: 21, color: color ?? AppColors.text)),
             ),
           ),
         ),

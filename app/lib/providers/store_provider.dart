@@ -26,7 +26,16 @@ class StoreProvider extends ChangeNotifier {
     }
   }
 
-  Future<List<Product>> products({String? category, String? subCategory, String? search, String? sort, bool? featured, bool? bestSeller, bool? organic, int page = 1, int limit = 40}) async {
+  Future<List<Product>> products(
+      {String? category,
+      String? subCategory,
+      String? search,
+      String? sort,
+      bool? featured,
+      bool? bestSeller,
+      bool? organic,
+      int page = 1,
+      int limit = 40}) async {
     final q = <String, String>{
       'page': '$page',
       'limit': '$limit',

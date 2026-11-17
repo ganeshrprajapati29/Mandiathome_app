@@ -110,7 +110,10 @@ class _SearchScreenState extends State<SearchScreen> {
                   child: const Text('Clear'),
                 ),
               ]),
-              Wrap(spacing: 8, runSpacing: 8, children: _recent.map((r) => ActionChip(avatar: const Icon(Icons.history, size: 16), label: Text(r), onPressed: () => _tapChip(r))).toList()),
+              Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: _recent.map((r) => ActionChip(avatar: const Icon(Icons.history, size: 16), label: Text(r), onPressed: () => _tapChip(r))).toList()),
               const SizedBox(height: 20),
             ],
             const Text('Popular searches', style: TextStyle(fontWeight: FontWeight.w700)),

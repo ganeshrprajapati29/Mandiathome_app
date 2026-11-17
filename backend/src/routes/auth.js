@@ -6,6 +6,8 @@ const { asyncHandler, ApiError } = require('../utils/helpers');
 
 const otpLimiter = rateLimit({ windowMs: 10 * 60 * 1000, max: 10, message: { success: false, message: 'Too many OTP requests, try later' } });
 
+const crypto = require('crypto');
+
 const normalizePhone = (p = '') => p.replace(/\D/g, '').slice(-10);
 
 // Hook your SMS provider here (MSG91 / Twilio / Fast2SMS etc.)
@@ -18,13 +20,14 @@ router.post('/send-otp', otpLimiter, asyncHandler(async (req, res) => {
   const phone = normalizePhone(req.body.phone);
   if (phone.length !== 10) throw new ApiError(400, 'Enter a valid 10-digit mobile number');
   const devMode = process.env.OTP_DEV_MODE === 'true';
-  const code = devMode ? '1234' : String(Math.floor(1000 + Math.random() * 9000));
+  const code = String(crypto.randomInt(1000, 10000)); // fresh random 4-digit OTP every time
   let user = await User.findOne({ phone });
   if (!user) user = new User({ phone });
-  user.otp = { code, expiresAt: new Date(Date.now() + 5 * 60 * 1000) };
+  user.otp = { code, expiresAt: new Date(Date.now() + 5 * 60 * 1000), attempts: 0 };
   await user.save();
   await sendSms(phone, code);
-  res.json({ success: true, message: 'OTP sent successfully', ...(devMode ? { devOtp: code } : {}) });
+  // In OTP_DEV_MODE the OTP is returned so the app can show it on screen (until an SMS gateway is connected).
+  res.json({ success: true, message: 'OTP sent successfully', expiresIn: 300, ...(devMode ? { devOtp: code } : {}) });
 }));
 
 // POST /api/auth/verify-otp { phone, otp }
@@ -33,7 +36,12 @@ router.post('/verify-otp', asyncHandler(async (req, res) => {
   const user = await User.findOne({ phone });
   if (!user || !user.otp?.code) throw new ApiError(400, 'Please request OTP first');
   if (user.otp.expiresAt < new Date()) throw new ApiError(400, 'OTP expired, please resend');
-  if (user.otp.code !== String(req.body.otp)) throw new ApiError(400, 'Invalid OTP');
+  if ((user.otp.attempts || 0) >= 5) throw new ApiError(429, 'Too many wrong attempts, please resend OTP');
+  if (user.otp.code !== String(req.body.otp)) {
+    user.otp.attempts = (user.otp.attempts || 0) + 1;
+    await user.save();
+    throw new ApiError(400, 'Invalid OTP, please try again');
+  }
   if (user.isBlocked) throw new ApiError(403, 'Your account has been blocked');
   user.otp = undefined;
   await user.save();

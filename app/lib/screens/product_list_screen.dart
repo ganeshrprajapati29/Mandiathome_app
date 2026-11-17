@@ -32,7 +32,9 @@ class _ProductListScreenState extends State<ProductListScreen> {
       _error = null;
     });
     try {
-      final r = await context.read<StoreProvider>().products(featured: widget.featured, bestSeller: widget.bestSeller, organic: widget.organic, sort: _sort, limit: 100);
+      final r = await context
+          .read<StoreProvider>()
+          .products(featured: widget.featured, bestSeller: widget.bestSeller, organic: widget.organic, sort: _sort, limit: 100);
       if (mounted) setState(() => _items = r);
     } catch (e) {
       if (mounted) setState(() => _error = e.toString());

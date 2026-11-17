@@ -17,7 +17,9 @@ class CategoriesScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('All Categories'),
-        actions: [IconButton(icon: const Icon(Icons.search), onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SearchScreen())))],
+        actions: [
+          IconButton(icon: const Icon(Icons.search), onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SearchScreen())))
+        ],
       ),
       body: Stack(children: [
         if (cats.isEmpty && store.loading)
@@ -81,7 +83,8 @@ class _CategoryBlock extends StatelessWidget {
             GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 4, mainAxisSpacing: 10, crossAxisSpacing: 10, childAspectRatio: .74),
+              gridDelegate:
+                  const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 4, mainAxisSpacing: 10, crossAxisSpacing: 10, childAspectRatio: .74),
               itemCount: category.subcategories.length,
               itemBuilder: (_, i) {
                 final s = category.subcategories[i];
@@ -93,11 +96,17 @@ class _CategoryBlock extends StatelessWidget {
                       child: Container(
                         decoration: BoxDecoration(color: AppColors.fromHex(s.color), borderRadius: BorderRadius.circular(16)),
                         alignment: Alignment.center,
-                        child: (s.image ?? '').isNotEmpty ? ProductImage(url: s.image, emoji: s.emoji, size: 50) : Text(s.emoji ?? '🥬', style: const TextStyle(fontSize: 30)),
+                        child: (s.image ?? '').isNotEmpty
+                            ? ProductImage(url: s.image, emoji: s.emoji, size: 50)
+                            : Text(s.emoji ?? '🥬', style: const TextStyle(fontSize: 30)),
                       ),
                     ),
                     const SizedBox(height: 5),
-                    Text(s.name, maxLines: 2, textAlign: TextAlign.center, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, height: 1.2)),
+                    Text(s.name,
+                        maxLines: 2,
+                        textAlign: TextAlign.center,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, height: 1.2)),
                   ]),
                 );
               },
