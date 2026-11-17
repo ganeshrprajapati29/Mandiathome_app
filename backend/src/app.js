@@ -19,7 +19,13 @@ if (process.env.NODE_ENV !== 'test') app.use(morgan('tiny'));
 app.use('/uploads', express.static(path.join(__dirname, '../uploads'), { maxAge: '7d' }));
 app.use('/admin', express.static(path.join(__dirname, '../public/admin')));
 
-app.get('/', (req, res) => res.json({ success: true, name: 'Mandi At Home API', version: '1.0.0' }));
+const apiInfo = (req, res) => res.json({
+  success: true,
+  name: 'Mandi At Home API',
+  version: '1.0.0',
+  endpoints: { health: '/api/health', home: '/api/home', categories: '/api/categories', products: '/api/products', admin: '/admin/' },
+});
+app.get(['/', '/api', '/api/'], apiInfo);
 app.get('/api/health', (req, res) => res.json({ success: true, status: 'ok', time: new Date() }));
 
 app.use('/api/auth', require('./routes/auth'));
