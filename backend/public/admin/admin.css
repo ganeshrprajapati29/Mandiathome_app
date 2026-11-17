@@ -1,0 +1,38 @@
+:root{--g:#2E7D32;--g2:#43A047;--gl:#E8F5E9;--o:#F57C00;--r:#E53935;--bg:#F5F7F4;--card:#fff;--tx:#1B2A1E;--mu:#6B7A6E;--bd:#E3E8E2}
+*{box-sizing:border-box}body{margin:0;font-family:Poppins,system-ui,sans-serif;background:var(--bg);color:var(--tx);font-size:14px}
+.hidden{display:none!important}.muted{color:var(--mu)}.err{color:var(--r);min-height:18px}
+input,select,textarea{width:100%;padding:10px 12px;border:1px solid var(--bd);border-radius:10px;font:inherit;background:#fff;margin:4px 0 10px}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--gl);border-color:var(--g2)}
+label{font-size:12px;font-weight:600;color:var(--mu)}
+.btn{border:0;border-radius:10px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer;background:#EEF2ED;color:var(--tx)}
+.btn.primary{background:var(--g);color:#fff}.btn.danger{background:#FDECEA;color:var(--r)}.btn.ghost{background:transparent;color:#fff;border:1px solid #ffffff55}
+.btn.sm{padding:5px 10px;font-size:12px}.btn.block{width:100%}.btn:hover{filter:brightness(.95)}
+.card{background:var(--card);border-radius:16px;box-shadow:0 2px 12px #0000000d;padding:18px}
+.login{min-height:100vh;display:grid;place-items:center;background:linear-gradient(135deg,#1B5E20,#66BB6A)}
+.login-card{width:min(360px,92vw);text-align:center}.login-logo{width:96px;border-radius:20px}
+.shell{display:flex;min-height:100vh}
+.side{width:240px;background:linear-gradient(180deg,#1B5E20,#2E7D32);color:#fff;padding:18px;display:flex;flex-direction:column;gap:14px;position:sticky;top:0;height:100vh}
+.brand{display:flex;gap:10px;align-items:center}.brand img{width:44px;border-radius:12px}.brand small{display:block;opacity:.75}
+nav{display:flex;flex-direction:column;gap:4px;flex:1}nav a{padding:10px 12px;border-radius:10px;cursor:pointer;color:#ffffffd9}
+nav a.active,nav a:hover{background:#ffffff22;color:#fff}
+.main{flex:1;padding:18px 24px;min-width:0}.top{display:flex;align-items:center;gap:12px}.top h1{font-size:22px;margin:6px 0 16px}
+.menu{display:none;border:0;background:#fff;border-radius:10px;padding:8px 12px;font-size:18px}
+.grid{display:grid;gap:14px}.stats{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.stat b{font-size:24px;display:block}.stat span{color:var(--mu)}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;align-items:center}.toolbar input,.toolbar select{width:auto;margin:0;min-width:180px}
+table{width:100%;border-collapse:collapse}th,td{padding:10px;text-align:left;border-bottom:1px solid var(--bd);vertical-align:middle}
+th{font-size:12px;color:var(--mu);text-transform:uppercase}.tbl{overflow-x:auto}
+.pill{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;background:var(--gl);color:var(--g)}
+.pill.placed{background:#E3F2FD;color:#1565C0}.pill.confirmed{background:#EDE7F6;color:#5E35B1}.pill.packed{background:#FFF8E1;color:#F57F17}
+.pill.out_for_delivery{background:#FFF3E0;color:#E65100}.pill.cancelled{background:#FDECEA;color:var(--r)}
+.emoji{font-size:26px}.thumb{width:40px;height:40px;border-radius:10px;object-fit:cover;background:var(--gl)}
+.vrow{display:grid;grid-template-columns:1.3fr .8fr .8fr .8fr .8fr .8fr auto;gap:6px;align-items:center}.vrow input,.vrow select{margin:0}
+.price-in{width:80px;margin:0;padding:6px 8px}
+.modal{position:fixed;inset:0;background:#0006;display:grid;place-items:center;z-index:20;padding:12px}
+.modal-box{width:min(820px,100%);max-height:92vh;overflow:auto}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.check{display:flex;gap:8px;align-items:center;font-weight:500}.check input{width:auto;margin:0}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(100px);background:#1B2A1E;color:#fff;padding:10px 18px;border-radius:12px;transition:.3s;z-index:30}
+.toast.show{transform:translateX(-50%) translateY(0)}
+@media(max-width:860px){.side{position:fixed;left:-260px;z-index:10;transition:.25s}.side.open{left:0}.menu{display:block}.main{padding:14px}
+.row2,.row3{grid-template-columns:1fr}.vrow{grid-template-columns:1fr 1fr 1fr}}

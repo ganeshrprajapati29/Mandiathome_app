@@ -1,0 +1,12 @@
+// PM2 config — isolated process name & port so other apps on the VPS are untouched.
+module.exports = {
+  apps: [{
+    name: 'mandiathome-api',
+    script: 'server.js',
+    cwd: __dirname,
+    instances: 1,
+    exec_mode: 'fork',
+    max_memory_restart: '400M',
+    env: { NODE_ENV: 'production' },
+  }],
+};
