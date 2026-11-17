@@ -215,7 +215,8 @@ class ProductCard extends StatelessWidget {
           ]),
           const SizedBox(height: 8),
           Text(product.name, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5, height: 1.2)),
-          if (product.hindiName != null) Text(product.hindiName!, maxLines: 1, style: const TextStyle(fontSize: 11, color: AppColors.textMuted)),
+          if (product.hindiName != null)
+            Text(product.hindiName!, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 11, color: AppColors.textMuted)),
           const SizedBox(height: 4),
           GestureDetector(
             onTap: multi ? () => showVariantSheet(context, product) : null,
@@ -223,22 +224,41 @@ class ProductCard extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(color: AppColors.bg, borderRadius: BorderRadius.circular(8)),
               child: Row(mainAxisSize: MainAxisSize.min, children: [
-                Text(v.label, style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w500)),
+                Flexible(
+                    child: Text(v.label, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w500))),
                 if (multi) const Icon(Icons.keyboard_arrow_down, size: 16, color: AppColors.primary),
               ]),
             ),
           ),
           const Spacer(),
-          Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
-            Expanded(
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(rupee(v.price), style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
-                if (v.mrp > v.price)
-                  Text(rupee(v.mrp), style: const TextStyle(fontSize: 11, color: AppColors.textMuted, decoration: TextDecoration.lineThrough)),
-              ]),
-            ),
-            multi ? _MultiAdd(product: product) : AddToCartButton(product: product, variant: v, height: 32).sized(76),
-          ]),
+          LayoutBuilder(builder: (context, box) {
+            final compact = box.maxWidth < compactCardInner;
+            final price = Text(rupee(v.price), maxLines: 1, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15));
+            final mrp =
+                Text(rupee(v.mrp), maxLines: 1, style: const TextStyle(fontSize: 11, color: AppColors.textMuted, decoration: TextDecoration.lineThrough));
+            final btnW = compact ? box.maxWidth : 76.0;
+            final button = multi ? _MultiAdd(product: product, width: btnW) : AddToCartButton(product: product, variant: v, height: 32).sized(btnW);
+            if (compact) {
+              // Narrow phones: price on one line, full-width ADD button below.
+              return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                  price,
+                  if (v.mrp > v.price) ...[const SizedBox(width: 5), Flexible(child: mrp)],
+                ]),
+                const SizedBox(height: 6),
+                button,
+              ]);
+            }
+            return Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
+              Expanded(
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  FittedBox(fit: BoxFit.scaleDown, child: price),
+                  if (v.mrp > v.price) FittedBox(fit: BoxFit.scaleDown, child: mrp),
+                ]),
+              ),
+              button,
+            ]);
+          }),
         ]),
       ),
     );
@@ -252,17 +272,18 @@ extension on Widget {
 /// For multi-variant products: ADD opens the pack-size sheet, shows total qty in cart.
 class _MultiAdd extends StatelessWidget {
   final Product product;
-  const _MultiAdd({required this.product});
+  final double width;
+  const _MultiAdd({required this.product, this.width = 76});
   @override
   Widget build(BuildContext context) {
     final q = context.select<CartProvider, int>((c) => c.qtyOfProduct(product.id));
-    if (!product.inStock) return AddToCartButton(product: product, variant: product.defaultVariant, height: 32).sized(76);
+    if (!product.inStock) return AddToCartButton(product: product, variant: product.defaultVariant, height: 32).sized(width);
     return GestureDetector(
       onTap: () => showVariantSheet(context, product),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         height: 32,
-        width: 76,
+        width: width,
         alignment: Alignment.center,
         decoration: BoxDecoration(
           gradient: q > 0 ? AppColors.greenGradient : null,
@@ -283,7 +304,7 @@ class ProductRail extends StatelessWidget {
   const ProductRail({super.key, required this.products});
   @override
   Widget build(BuildContext context) => SizedBox(
-        height: 262,
+        height: productCardExtent(150) + 4,
         child: ListView.separated(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           scrollDirection: Axis.horizontal,
@@ -294,4 +315,43 @@ class ProductRail extends StatelessWidget {
       );
 }
 
-const productGridDelegate = SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, mainAxisSpacing: 12, crossAxisSpacing: 12, childAspectRatio: .60);
+/// Height a [ProductCard] needs for a given card width (square image + text block).
+/// Using a fixed extent instead of an aspect ratio keeps cards from overflowing on any screen size.
+/// Inner card width (card minus 2×10 padding) below which the ADD button moves under the price.
+const double compactCardInner = 128;
+
+double productCardExtent(double cardWidth) => cardWidth + 128 + (cardWidth - 20 < compactCardInner ? 28 : 0);
+
+/// Two-column product grid that sizes each card from the available width.
+class ProductGrid extends StatelessWidget {
+  final List<Product> products;
+  final EdgeInsets padding;
+  final double spacing;
+  final Widget Function(int index, Widget card)? wrap;
+  final Future<void> Function()? onRefresh;
+  const ProductGrid(
+      {super.key, required this.products, this.padding = const EdgeInsets.fromLTRB(16, 12, 16, 100), this.spacing = 12, this.wrap, this.onRefresh});
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(builder: (_, c) {
+      final cardW = (c.maxWidth - padding.horizontal - spacing) / 2;
+      final grid = GridView.builder(
+        padding: padding,
+        physics: const AlwaysScrollableScrollPhysics(),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          mainAxisSpacing: spacing,
+          crossAxisSpacing: spacing,
+          mainAxisExtent: productCardExtent(cardW),
+        ),
+        itemCount: products.length,
+        itemBuilder: (_, i) {
+          final card = ProductCard(product: products[i]);
+          return wrap == null ? card : wrap!(i, card);
+        },
+      );
+      return onRefresh == null ? grid : RefreshIndicator(onRefresh: onRefresh!, child: grid);
+    });
+  }
+}

@@ -168,12 +168,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
           ? const Center(child: CircularProgressIndicator())
           : items.isEmpty
               ? const EmptyState(emoji: '💚', title: 'No favourites yet', message: 'Tap the heart on any product to save it here.')
-              : GridView.builder(
-                  padding: const EdgeInsets.all(16),
-                  gridDelegate: productGridDelegate,
-                  itemCount: items.length,
-                  itemBuilder: (_, i) => ProductCard(product: items[i]),
-                ),
+              : ProductGrid(products: items, padding: const EdgeInsets.all(16)),
     );
   }
 }

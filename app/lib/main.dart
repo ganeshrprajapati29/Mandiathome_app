@@ -28,6 +28,8 @@ class MandiAtHomeApp extends StatelessWidget {
         title: 'Mandi At Home',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.light,
+        // Large system font sizes are capped so layouts never overflow.
+        builder: (context, child) => MediaQuery.withClampedTextScaling(maxScaleFactor: 1.15, child: child!),
         home: const SplashScreen(),
       ),
     );

@@ -38,6 +38,18 @@
 
 ---
 
+## 🖼️ Catalogue & photos
+
+The demo catalogue has 6 categories: Fresh Vegetables, Fresh Fruits, Grocery & Staples, Dry Fruits & Nuts, Organic, and Baskets.
+Each has sub-categories and about 90 products, with Indian pack sizes and typical retail prices.
+Product and category photos are real photos under free licences:
+fruits and vegetables come from the Fruits-360 dataset, and grocery items come from Wikimedia Commons.
+Sources and licences are listed in [`backend/public/catalog/CREDITS.md`](backend/public/catalog/CREDITS.md).
+Any photo can be replaced from the admin panel.
+
+Existing servers with **no orders yet** get the new catalogue automatically on the next deploy.
+Stores that already have orders keep their products; only missing photos are added.
+
 ## 🚀 Backend: deploy on a VPS (one command)
 
 Run this on the server as root:

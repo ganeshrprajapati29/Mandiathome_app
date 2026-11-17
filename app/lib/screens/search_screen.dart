@@ -134,12 +134,7 @@ class _SearchScreenState extends State<SearchScreen> {
         else if (_results!.isEmpty)
           EmptyState(emoji: '🔍', title: 'No results for "${_ctrl.text}"', message: 'Try searching with a different name, e.g. "aloo" or "potato".')
         else
-          GridView.builder(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
-            gridDelegate: productGridDelegate,
-            itemCount: _results!.length,
-            itemBuilder: (_, i) => ProductCard(product: _results![i]),
-          ),
+          ProductGrid(products: _results!),
         const Positioned(left: 0, right: 0, bottom: 0, child: CartBar()),
       ]),
     );

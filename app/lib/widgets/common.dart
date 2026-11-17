@@ -177,3 +177,37 @@ class PriceText extends StatelessWidget {
         ],
       ]);
 }
+
+/// Category / sub-category artwork: photo icon (transparent PNG) on the category colour, or emoji fallback.
+class CategoryThumb extends StatelessWidget {
+  final String? image, emoji, color;
+  final double size;
+  final bool circle;
+  const CategoryThumb({super.key, this.image, this.emoji, this.color, required this.size, this.circle = false});
+  @override
+  Widget build(BuildContext context) {
+    final r = circle ? size / 2 : size * .22;
+    final hasImg = (image ?? '').isNotEmpty;
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(colors: [AppColors.fromHex(color), Colors.white], begin: Alignment.topCenter, end: Alignment.bottomCenter),
+        borderRadius: BorderRadius.circular(r),
+        border: circle ? null : Border.all(color: AppColors.border),
+      ),
+      alignment: Alignment.center,
+      child: hasImg
+          ? Padding(
+              padding: EdgeInsets.all(size * .06),
+              child: CachedNetworkImage(
+                imageUrl: ApiConfig.image(image),
+                fit: BoxFit.contain,
+                placeholder: (_, __) => Text(emoji ?? '🥬', style: TextStyle(fontSize: size * .45)),
+                errorWidget: (_, __, ___) => Text(emoji ?? '🥬', style: TextStyle(fontSize: size * .45)),
+              ),
+            )
+          : Text(emoji ?? '🥬', style: TextStyle(fontSize: size * .45)),
+    );
+  }
+}

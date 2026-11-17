@@ -50,9 +50,13 @@ class HomeScreen extends StatelessWidget {
               SliverPadding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 sliver: SliverGrid(
-                  gridDelegate:
-                      const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 4, mainAxisSpacing: 12, crossAxisSpacing: 10, childAspectRatio: .72),
-                  delegate: SliverChildBuilderDelegate((_, i) => _CategoryTile(category: _subcats(home)[i]), childCount: _subcats(home).length.clamp(0, 12)),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 4,
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 10,
+                    mainAxisExtent: (MediaQuery.of(context).size.width - 32 - 30) / 4 + 46,
+                  ),
+                  delegate: SliverChildBuilderDelegate((_, i) => _CategoryTile(category: _subcats(home)[i]), childCount: _subcats(home).length.clamp(0, 16)),
                 ),
               ),
               if (home.featured.isNotEmpty) ...[
@@ -376,17 +380,7 @@ class _CategoryTile extends StatelessWidget {
       child: Column(children: [
         AspectRatio(
           aspectRatio: 1,
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(colors: [AppColors.fromHex(category.color), Colors.white], begin: Alignment.topCenter, end: Alignment.bottomCenter),
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: AppColors.border),
-            ),
-            alignment: Alignment.center,
-            child: (category.image ?? '').isNotEmpty
-                ? ProductImage(url: category.image, emoji: category.emoji, size: 56)
-                : Text(category.emoji ?? '🥬', style: const TextStyle(fontSize: 34)),
-          ),
+          child: LayoutBuilder(builder: (_, c) => CategoryThumb(image: category.image, emoji: category.emoji, color: category.color, size: c.maxWidth)),
         ),
         const SizedBox(height: 6),
         Text(category.name,

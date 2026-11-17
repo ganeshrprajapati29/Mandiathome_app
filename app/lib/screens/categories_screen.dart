@@ -47,7 +47,6 @@ class _CategoryBlock extends StatelessWidget {
   const _CategoryBlock({required this.category, required this.index});
   @override
   Widget build(BuildContext context) {
-    final color = AppColors.fromHex(category.color);
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: 1),
       duration: Duration(milliseconds: 400 + index * 120),
@@ -61,13 +60,7 @@ class _CategoryBlock extends StatelessWidget {
           InkWell(
             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => CategoryProductsScreen(category: category))),
             child: Row(children: [
-              Container(
-                width: 46,
-                height: 46,
-                decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(14)),
-                alignment: Alignment.center,
-                child: Text(category.emoji ?? '🥬', style: const TextStyle(fontSize: 26)),
-              ),
+              CategoryThumb(image: category.image, emoji: category.emoji, color: category.color, size: 54),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -80,36 +73,36 @@ class _CategoryBlock extends StatelessWidget {
           ),
           if (category.subcategories.isNotEmpty) ...[
             const SizedBox(height: 14),
-            GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              gridDelegate:
-                  const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 4, mainAxisSpacing: 10, crossAxisSpacing: 10, childAspectRatio: .74),
-              itemCount: category.subcategories.length,
-              itemBuilder: (_, i) {
-                final s = category.subcategories[i];
-                return GestureDetector(
-                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => CategoryProductsScreen(category: category, initialSubId: s.id))),
-                  child: Column(children: [
-                    AspectRatio(
-                      aspectRatio: 1,
-                      child: Container(
-                        decoration: BoxDecoration(color: AppColors.fromHex(s.color), borderRadius: BorderRadius.circular(16)),
-                        alignment: Alignment.center,
-                        child: (s.image ?? '').isNotEmpty
-                            ? ProductImage(url: s.image, emoji: s.emoji, size: 50)
-                            : Text(s.emoji ?? '🥬', style: const TextStyle(fontSize: 30)),
+            LayoutBuilder(
+              builder: (context, box) => GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 4,
+                  mainAxisSpacing: 10,
+                  crossAxisSpacing: 10,
+                  mainAxisExtent: (box.maxWidth - 30) / 4 + 42,
+                ),
+                itemCount: category.subcategories.length,
+                itemBuilder: (_, i) {
+                  final s = category.subcategories[i];
+                  return GestureDetector(
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => CategoryProductsScreen(category: category, initialSubId: s.id))),
+                    child: Column(children: [
+                      AspectRatio(
+                        aspectRatio: 1,
+                        child: LayoutBuilder(builder: (_, c) => CategoryThumb(image: s.image, emoji: s.emoji, color: s.color, size: c.maxWidth)),
                       ),
-                    ),
-                    const SizedBox(height: 5),
-                    Text(s.name,
-                        maxLines: 2,
-                        textAlign: TextAlign.center,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, height: 1.2)),
-                  ]),
-                );
-              },
+                      const SizedBox(height: 5),
+                      Text(s.name,
+                          maxLines: 2,
+                          textAlign: TextAlign.center,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, height: 1.2)),
+                    ]),
+                  );
+                },
+              ),
             ),
           ],
         ]),

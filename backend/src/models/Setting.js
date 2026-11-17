@@ -16,6 +16,7 @@ const settingSchema = new mongoose.Schema(
     deliverySlots: { type: [String], default: ['7 AM - 10 AM', '10 AM - 1 PM', '4 PM - 7 PM', '7 PM - 9 PM'] },
     serviceablePincodes: { type: [String], default: [] }, // empty = all serviceable
     isStoreOpen: { type: Boolean, default: true },
+    catalogVersion: { type: Number, default: 1 },
   },
   { timestamps: true }
 );

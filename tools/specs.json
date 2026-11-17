@@ -1,0 +1,412 @@
+{
+ "onion": {
+  "ref": "s:Onion Red",
+  "layout": "trio"
+ },
+ "potato": {
+  "ref": "s:Potato White",
+  "layout": "trio"
+ },
+ "tomato": {
+  "ref": "o:Tomato 8",
+  "layout": "trio"
+ },
+ "lemon": {
+  "ref": "s:Lemon",
+  "layout": "trio"
+ },
+ "cucumber": {
+  "ref": "o:Cucumber 1",
+  "layout": "long3"
+ },
+ "ginger": {
+  "ref": "o:Ginger 1",
+  "layout": "duo"
+ },
+ "garlic": {
+  "ref": "o:garlic bulb 1",
+  "layout": "trio"
+ },
+ "cabbage": {
+  "ref": "o:cabbage_white_1",
+  "layout": "single"
+ },
+ "kohlrabi": {
+  "ref": "s:Kohlrabi",
+  "layout": "trio"
+ },
+ "brinjal-round": {
+  "ref": "s:Eggplant",
+  "layout": "trio"
+ },
+ "brinjal-long": {
+  "ref": "o:eggplant_long_1",
+  "layout": "long3"
+ },
+ "flat-beans": {
+  "ref": "o:Bean pod 1",
+  "layout": "long3",
+  "scale": 1.1
+ },
+ "cauliflower": {
+  "ref": "s:Cauliflower",
+  "layout": "single",
+  "scale": 0.85
+ },
+ "carrot": {
+  "ref": "o:Carrot 1",
+  "layout": "long3"
+ },
+ "beetroot": {
+  "ref": "s:Beetroot",
+  "layout": "trio"
+ },
+ "sweet-potato": {
+  "ref": "s:Potato Sweet",
+  "layout": "trio"
+ },
+ "capsicum": {
+  "ref": "s:Pepper Green",
+  "layout": "trio"
+ },
+ "red-bell-pepper": {
+  "ref": "o:Pepper 1",
+  "layout": "duo"
+ },
+ "yellow-bell-pepper": {
+  "ref": "o:Pepper Orange 2",
+  "layout": "duo"
+ },
+ "mushroom": {
+  "ref": "o:Mushroom champignon 5",
+  "layout": "trio",
+  "pick": "wide"
+ },
+ "sweet-corn": {
+  "ref": "s:Corn",
+  "layout": "duo",
+  "scale": 1.15
+ },
+ "zucchini": {
+  "ref": "o:Zucchini Green 1",
+  "layout": "long3"
+ },
+ "banana": {
+  "ref": "o:Banana 2",
+  "layout": "bunch",
+  "pick": "wide"
+ },
+ "apple-shimla": {
+  "ref": "o:apple_red_1",
+  "layout": "trio"
+ },
+ "apple-red-delicious": {
+  "ref": "o:apple_red_delicios_1",
+  "layout": "trio"
+ },
+ "apple-green": {
+  "ref": "o:apple_granny_smith_1",
+  "layout": "trio"
+ },
+ "orange": {
+  "ref": "s:Orange",
+  "layout": "trio"
+ },
+ "kinnow": {
+  "ref": "s:Clementine",
+  "layout": "trio"
+ },
+ "pomegranate": {
+  "ref": "s:Pomegranate",
+  "layout": "trio"
+ },
+ "papaya": {
+  "ref": "o:Papaya 2",
+  "layout": "single"
+ },
+ "guava": {
+  "ref": "s:Guava",
+  "layout": "trio"
+ },
+ "pear": {
+  "ref": "o:Pear 1",
+  "layout": "trio"
+ },
+ "coconut": {
+  "ref": "s:Cocos",
+  "layout": "duo"
+ },
+ "mango": {
+  "ref": "s:Mango Red",
+  "layout": "trio"
+ },
+ "watermelon": {
+  "ref": "s:Watermelon",
+  "layout": "single",
+  "pick": "wide",
+  "scale": 0.9
+ },
+ "grapes-green": {
+  "ref": "s:Grape White",
+  "layout": "pile"
+ },
+ "grapes-black": {
+  "ref": "s:Grape Blue",
+  "layout": "pile"
+ },
+ "muskmelon": {
+  "ref": "o:Cantaloupe 3",
+  "layout": "single"
+ },
+ "pineapple": {
+  "ref": "s:Pineapple",
+  "layout": "single",
+  "pick": "tall",
+  "scale": 0.95
+ },
+ "lychee": {
+  "ref": "s:Lychee",
+  "layout": "pile"
+ },
+ "plum": {
+  "ref": "o:Plum 4",
+  "layout": "trio"
+ },
+ "kiwi": {
+  "ref": "o:Kiwi 3",
+  "layout": "trio"
+ },
+ "dragon-fruit": {
+  "ref": "s:Pitahaya Red",
+  "layout": "duo"
+ },
+ "avocado": {
+  "ref": "o:Avocado Green 1",
+  "layout": "duo"
+ },
+ "blueberry": {
+  "ref": "s:Blueberry",
+  "layout": "pile"
+ },
+ "strawberry": {
+  "ref": "s:Strawberry",
+  "layout": "pile",
+  "scale": 1.15
+ },
+ "almonds": {
+  "ref": "o:Almonds 1",
+  "layout": "pile"
+ },
+ "cashew": {
+  "ref": "o:Caju seed 1",
+  "layout": "pile"
+ },
+ "pistachio": {
+  "ref": "o:Pistachio 1",
+  "layout": "pile"
+ },
+ "walnut": {
+  "ref": "o:Nut 3",
+  "layout": "trio"
+ },
+ "dates": {
+  "ref": "o:Dates 2",
+  "layout": "pile",
+  "scale": 1.1
+ },
+ "organic-tomato": {
+  "ref": "o:Tomato 1",
+  "layout": "trio"
+ },
+ "organic-carrot": {
+  "ref": "o:Carrot 1",
+  "layout": "long3",
+  "offset": 3
+ },
+ "organic-banana": {
+  "ref": "o:Banana 2",
+  "layout": "bunch",
+  "pick": "wide",
+  "offset": 2
+ },
+ "organic-apple": {
+  "ref": "o:apple_granny_smith_1",
+  "layout": "duo",
+  "offset": 3
+ },
+ "basket-veggie": {
+  "layout": "mix",
+  "items": [
+   "s:Onion Red",
+   "s:Potato White",
+   "o:Tomato 8",
+   "o:Carrot 1",
+   "s:Pepper Green",
+   "o:cabbage_white_1"
+  ]
+ },
+ "basket-fruit": {
+  "layout": "mix",
+  "items": [
+   "o:apple_red_1",
+   "s:Orange",
+   "s:Pomegranate",
+   "o:Banana 2@wide",
+   "s:Mango Red"
+  ]
+ },
+ "basket-salad": {
+  "layout": "mix",
+  "items": [
+   "o:Cucumber 1",
+   "o:Tomato 8",
+   "o:Carrot 1",
+   "s:Lemon",
+   "s:Beetroot"
+  ]
+ },
+ "cat-vegetables": {
+  "layout": "mix",
+  "items": [
+   "o:Tomato 8",
+   "o:cabbage_white_1",
+   "o:Carrot 1"
+  ],
+  "transparent": true
+ },
+ "cat-fruits": {
+  "layout": "mix",
+  "items": [
+   "s:Apple Red 1",
+   "s:Orange",
+   "o:Banana 2@wide"
+  ],
+  "transparent": true
+ },
+ "cat-organic": {
+  "layout": "mix",
+  "items": [
+   "o:apple_granny_smith_1",
+   "o:Tomato 1"
+  ],
+  "transparent": true
+ },
+ "cat-dryfruits": {
+  "layout": "mix",
+  "items": [
+   "o:Nut 3",
+   "o:Almonds 1@wide",
+   "o:Pistachio 1"
+  ],
+  "transparent": true
+ },
+ "cat-baskets": {
+  "layout": "mix",
+  "items": [
+   "s:Pomegranate",
+   "s:Pepper Green",
+   "s:Orange",
+   "o:Carrot 1"
+  ],
+  "transparent": true
+ },
+ "sub-daily-veggies": {
+  "layout": "mix",
+  "items": [
+   "s:Onion Red",
+   "s:Potato White",
+   "o:Tomato 8"
+  ],
+  "transparent": true
+ },
+ "sub-leafy": {
+  "ref": "o:cabbage_white_1",
+  "layout": "single",
+  "transparent": true
+ },
+ "sub-gourds": {
+  "layout": "mix",
+  "items": [
+   "s:Cauliflower",
+   "s:Eggplant"
+  ],
+  "transparent": true
+ },
+ "sub-roots": {
+  "layout": "mix",
+  "items": [
+   "s:Beetroot",
+   "o:Carrot 1",
+   "o:Ginger 1"
+  ],
+  "transparent": true
+ },
+ "sub-exotic-veg": {
+  "layout": "mix",
+  "items": [
+   "o:Pepper 1",
+   "s:Pepper Green",
+   "o:Pepper Orange 2"
+  ],
+  "transparent": true
+ },
+ "sub-daily-fruits": {
+  "layout": "mix",
+  "items": [
+   "s:Apple Red 1",
+   "s:Orange"
+  ],
+  "transparent": true
+ },
+ "sub-seasonal": {
+  "layout": "mix",
+  "items": [
+   "s:Mango Red",
+   "s:Watermelon@wide"
+  ],
+  "transparent": true
+ },
+ "sub-exotic-fruits": {
+  "layout": "mix",
+  "items": [
+   "o:Kiwi 3",
+   "s:Pitahaya Red",
+   "o:Avocado Green 1"
+  ],
+  "transparent": true
+ },
+ "sub-organic-veg": {
+  "ref": "o:Tomato 1",
+  "layout": "duo",
+  "transparent": true
+ },
+ "sub-organic-fruits": {
+  "ref": "o:apple_granny_smith_1",
+  "layout": "duo",
+  "transparent": true
+ },
+ "sub-nuts": {
+  "layout": "mix",
+  "items": [
+   "o:Nut 3",
+   "o:Almonds 1@wide",
+   "o:Pistachio 1"
+  ],
+  "transparent": true
+ },
+ "sub-dates": {
+  "ref": "o:Dates 2",
+  "layout": "pile",
+  "transparent": true
+ },
+ "sub-baskets": {
+  "layout": "mix",
+  "items": [
+   "o:apple_red_1",
+   "o:Tomato 8",
+   "s:Orange",
+   "o:Carrot 1"
+  ],
+  "transparent": true
+ }
+}

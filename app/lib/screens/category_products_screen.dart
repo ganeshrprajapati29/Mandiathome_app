@@ -99,6 +99,7 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
                   _SideItem(
                       label: 'All',
                       emoji: widget.category.emoji ?? '🛒',
+                      image: widget.category.image,
                       color: widget.category.color,
                       selected: _sub == null,
                       onTap: () {
@@ -131,25 +132,23 @@ class _CategoryProductsScreenState extends State<CategoryProductsScreen> {
     if (_products == null) {
       return GridView.builder(
         padding: const EdgeInsets.all(10),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, mainAxisSpacing: 10, crossAxisSpacing: 10, childAspectRatio: .56),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, mainAxisSpacing: 10, crossAxisSpacing: 10, mainAxisExtent: 260),
         itemCount: 6,
         itemBuilder: (_, __) => const ShimmerBox(height: 200),
       );
     }
     if (_products!.isEmpty) return const EmptyState(emoji: '🧺', title: 'Nothing here yet', message: 'New stock arrives from the mandi every morning.');
-    return RefreshIndicator(
+    return ProductGrid(
+      products: _products!,
+      padding: const EdgeInsets.fromLTRB(10, 10, 10, 100),
+      spacing: 10,
       onRefresh: _load,
-      child: GridView.builder(
-        padding: const EdgeInsets.fromLTRB(10, 10, 10, 100),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, mainAxisSpacing: 10, crossAxisSpacing: 10, childAspectRatio: .54),
-        itemCount: _products!.length,
-        itemBuilder: (_, i) => TweenAnimationBuilder<double>(
-          key: ValueKey('${_sub}_${_products![i].id}'),
-          tween: Tween(begin: 0, end: 1),
-          duration: Duration(milliseconds: 300 + (i % 6) * 60),
-          builder: (_, v, child) => Opacity(opacity: v, child: Transform.translate(offset: Offset(0, (1 - v) * 20), child: child)),
-          child: ProductCard(product: _products![i]),
-        ),
+      wrap: (i, card) => TweenAnimationBuilder<double>(
+        key: ValueKey('${_sub}_${_products![i].id}'),
+        tween: Tween(begin: 0, end: 1),
+        duration: Duration(milliseconds: 300 + (i % 6) * 60),
+        builder: (_, v, child) => Opacity(opacity: v, child: Transform.translate(offset: Offset(0, (1 - v) * 20), child: child)),
+        child: card,
       ),
     );
   }
@@ -176,15 +175,7 @@ class _SideItem extends StatelessWidget {
           AnimatedScale(
             scale: selected ? 1.08 : 1,
             duration: const Duration(milliseconds: 250),
-            child: Container(
-              width: 54,
-              height: 54,
-              decoration: BoxDecoration(color: AppColors.fromHex(color), shape: BoxShape.circle),
-              alignment: Alignment.center,
-              child: (image ?? '').isNotEmpty
-                  ? ClipOval(child: ProductImage(url: image, emoji: emoji, size: 54, radius: 27))
-                  : Text(emoji, style: const TextStyle(fontSize: 26)),
-            ),
+            child: CategoryThumb(image: image, emoji: emoji, color: color, size: 56, circle: true),
           ),
           const SizedBox(height: 5),
           Text(label,

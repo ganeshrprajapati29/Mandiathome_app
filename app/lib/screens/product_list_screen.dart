@@ -63,12 +63,7 @@ class _ProductListScreenState extends State<ProductListScreen> {
         else if (_items!.isEmpty)
           const EmptyState(emoji: '🧺', title: 'No products', message: 'Check back soon!')
         else
-          GridView.builder(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
-            gridDelegate: productGridDelegate,
-            itemCount: _items!.length,
-            itemBuilder: (_, i) => ProductCard(product: _items![i]),
-          ),
+          ProductGrid(products: _items!),
         const Positioned(left: 0, right: 0, bottom: 0, child: CartBar()),
       ]),
     );
