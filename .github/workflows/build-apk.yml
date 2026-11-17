@@ -8,7 +8,7 @@ on:
     inputs:
       api_host:
         description: 'Backend URL baked into the app'
-        default: 'http://72.60.41.224:5055'
+        default: 'http://72.60.41.224:6055'
 
 permissions:
   contents: write
@@ -37,7 +37,7 @@ jobs:
       - run: flutter analyze --no-fatal-infos
 
       - name: Build release APK
-        run: flutter build apk --release --dart-define=API_HOST=${{ github.event.inputs.api_host || 'http://72.60.41.224:5055' }}
+        run: flutter build apk --release --dart-define=API_HOST=${{ github.event.inputs.api_host || 'http://72.60.41.224:6055' }}
 
       - name: Rename APK
         run: cp build/app/outputs/flutter-apk/app-release.apk build/MandiAtHome-v1.0.${{ github.run_number }}.apk
@@ -53,6 +53,6 @@ jobs:
           tag_name: v1.0.${{ github.run_number }}
           name: Mandi At Home v1.0.${{ github.run_number }}
           body: |
-            Android APK for Mandi At Home (API: ${{ github.event.inputs.api_host || 'http://72.60.41.224:5055' }}).
+            Android APK for Mandi At Home (API: ${{ github.event.inputs.api_host || 'http://72.60.41.224:6055' }}).
             Download the .apk below and install it on your phone.
           files: app/build/MandiAtHome-v1.0.${{ github.run_number }}.apk

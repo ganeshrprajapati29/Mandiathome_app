@@ -1,8 +1,8 @@
 class ApiConfig {
-  /// 👉 Change this to your VPS address after deployment, e.g. 'http://72.60.41.224:5055'
+  /// 👉 Change this to your VPS address after deployment, e.g. 'http://72.60.41.224:6055'
   /// or your domain 'https://api.mandiathome.com'.
-  /// For Android emulator + local backend use 'http://10.0.2.2:5055'.
-  static const String host = String.fromEnvironment('API_HOST', defaultValue: 'http://72.60.41.224:5055');
+  /// For Android emulator + local backend use 'http://10.0.2.2:6055'.
+  static const String host = String.fromEnvironment('API_HOST', defaultValue: 'http://72.60.41.224:6055');
 
   static const String baseUrl = '$host/api';
 

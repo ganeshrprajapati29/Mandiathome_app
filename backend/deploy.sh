@@ -2,7 +2,7 @@
 # =====================================================================
 #  Mandi At Home API — safe one-shot installer / updater for a VPS
 #  - Installs into /var/www/mandiathome (own folder)
-#  - Runs on its own port (default 5055) under PM2 name "mandiathome-api"
+#  - Runs on its own port (default 6055) under PM2 name "mandiathome-api"
 #  - Uses its own MongoDB database "mandiathome"
 #  - Does NOT touch nginx, other PM2 apps, or other databases
 #  Re-run anytime to update (git pull + npm install + pm2 reload).
@@ -12,7 +12,7 @@ set -euo pipefail
 APP_DIR="${APP_DIR:-/var/www/mandiathome}"
 REPO_URL="${REPO_URL:-https://github.com/ganeshrprajapati29/Mandiathome_app.git}"
 BRANCH="${BRANCH:-main}"
-PORT="${PORT:-5055}"
+PORT="${PORT:-6055}"
 
 log(){ echo -e "\e[32m▶ $*\e[0m"; }
 warn(){ echo -e "\e[33m⚠ $*\e[0m"; }
@@ -81,25 +81,39 @@ PUBLIC_URL=http://$IP:$PORT
 ENV
 fi
 
-log "Installing dependencies"
+# migrate old installs from port 5055 (clashes with another app) to the new default
+if grep -q '^PORT=5055$' .env; then
+  log "Moving API from port 5055 to $PORT"
+  sed -i "s/^PORT=5055$/PORT=$PORT/; s#^PUBLIC_URL=\(.*\):5055#PUBLIC_URL=\1:$PORT#" .env
+fi
+
+log "Installing dependencies (clean)"
+rm -rf node_modules
 npm ci --omit=dev || npm install --omit=dev
 mkdir -p uploads
+
+# --- Port check: our port must be free (or used only by our own PM2 process) ---
+P=$(grep ^PORT= .env | cut -d= -f2)
+pm2 stop mandiathome-api >/dev/null 2>&1 || true
+sleep 1
+if ss -ltn "sport = :$P" | grep -q LISTEN; then
+  echo -e "\e[31m✖ Port $P is already used by another app on this server:\e[0m"
+  ss -ltnp "sport = :$P" || true
+  echo "  Pick a free port: edit PORT in $APP_DIR/backend/.env and run this script again."
+  exit 1
+fi
 
 log "Seeding (only if DB is empty)"
 npm run seed
 
-if pm2 describe mandiathome-api >/dev/null 2>&1; then
-  pm2 reload mandiathome-api --update-env
-else
-  pm2 start ecosystem.config.js
-fi
+pm2 delete mandiathome-api >/dev/null 2>&1 || true
+pm2 start ecosystem.config.js --update-env
 pm2 save
 
 # open port in ufw only if ufw is active
 if command -v ufw >/dev/null 2>&1 && ufw status | grep -q "Status: active"; then ufw allow "$(grep ^PORT= .env | cut -d= -f2)"/tcp || true; fi
 
-P=$(grep ^PORT= .env | cut -d= -f2)
-sleep 2
+sleep 3
 curl -fsS "http://127.0.0.1:$P/api/health" >/dev/null && log "✅ API is live on port $P" || warn "API did not respond yet — check: pm2 logs mandiathome-api"
 echo
 echo "  API:    http://<server-ip>:$P/api"
