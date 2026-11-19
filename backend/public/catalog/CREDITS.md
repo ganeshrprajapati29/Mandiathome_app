@@ -37,3 +37,10 @@ They are centre-cropped to a square and resized, and they keep their original li
 | `g-tea.jpg` | [CTC tea.jpg](https://commons.wikimedia.org/wiki/File:CTC_tea.jpg) | Naresh.limbu at English Wikipedia | CC BY-SA 3.0 |
 | `g-poha.jpg` | [Poha.jpg](https://commons.wikimedia.org/wiki/File:Poha.jpg) | Sanjay Acharya, aka Sanjay ach at en.wikipedia | CC BY-SA 3.0 |
 | `g-jaggery.jpg` | [Organic Chemical free Kolhapur Jaggery Dhep (Block) - 1 Kg each.jpg](https://commons.wikimedia.org/wiki/File:Organic_Chemical_free_Kolhapur_Jaggery_Dhep_(Block)_-_1_Kg_each.jpg) | Sushant Medhe Pawar of Kolhapur Agricultural Produce Market (Kolhapur Sheti Utpanna Bazar Samiti) from Kolhapur | CC0 |
+| `v-spinach.jpg` | [Fresh Spinach leaves.jpg](https://commons.wikimedia.org/wiki/File:Fresh_Spinach_leaves.jpg) | Charipearl | CC BY-SA 4.0 |
+| `v-coriander.jpg` | [Bunches of coriander leaves.jpg](https://commons.wikimedia.org/wiki/File:Bunches_of_coriander_leaves.jpg) | Kpsudeep | CC BY-SA 4.0 |
+| `v-methi.jpg` | [Washed fenugreek leaves for cooking methi-chadachadi.jpg](https://commons.wikimedia.org/wiki/File:Washed_fenugreek_leaves_for_cooking_methi-chadachadi.jpg) | Subhashish Panigrahi | CC BY-SA 4.0 |
+| `v-mint.jpg` | [Liat Portal for Foodie Disorder - Fresh Mint from San Francisco Farmers Market.jpg](https://commons.wikimedia.org/wiki/File:Liat_Portal_for_Foodie_Disorder_-_Fresh_Mint_from_San_Francisco_Farmers_Market.jpg) | HaJunkiyada | CC BY-SA 4.0 |
+| `v-okra.jpg` | [Okra Lady`s Finger.jpg](https://commons.wikimedia.org/wiki/File:Okra_Lady%60s_Finger.jpg) | SarKaLay စာကလေး | CC BY-SA 4.0 |
+| `v-lauki.jpg` | [Fresh Bottle Gourd (Lauki) from Home Garden.jpg](https://commons.wikimedia.org/wiki/File:Fresh_Bottle_Gourd_(Lauki)_from_Home_Garden.jpg) | MohitSinghRazput | CC BY-SA 4.0 |
+| `g-sooji.jpg` | [Semolina Sooji (49684140806).jpg](https://commons.wikimedia.org/wiki/File:Semolina_Sooji_(49684140806).jpg) | Ajay Suresh from New York, NY, USA | CC BY 2.0 |

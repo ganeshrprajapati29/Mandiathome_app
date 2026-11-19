@@ -52,18 +52,18 @@ const catalog = [
       { name: 'Leafy & Herbs', emoji: '🥬', color: '#E8F5E9', image: '/catalog/sub-leafy.png', products: [
         ['Cabbage', 'पत्ता गोभी', '🥬', byPiece(35, [1, 2]), { img: 'cabbage', tags: 'patta gobhi,band gobhi', desc: 'Tight green cabbage, approx. 600–900 g per piece.' }],
         ['Kohlrabi', 'गांठ गोभी', '🥬', byWeight(60, [0.5, 1]), { img: 'kohlrabi', tags: 'ganth gobhi,knol khol', desc: 'Tender kohlrabi (ganth gobhi) — great in sabzi and salads.' }],
-        ['Spinach', 'पालक', '🥬', byPiece(30, [1, 2], 'bunch'), { tags: 'palak', desc: 'Fresh palak bunch (approx. 250 g).' }],
-        ['Coriander Leaves', 'हरा धनिया', '🌿', byWeight(150, [0.1, 0.25]), { tags: 'dhaniya', desc: 'Fragrant green coriander for garnish and chutney.' }],
-        ['Methi', 'मेथी', '🌱', byPiece(25, [1, 2], 'bunch'), { tags: 'methi,fenugreek', desc: 'Fresh fenugreek leaves bunch.' }],
-        ['Mint Leaves', 'पुदीना', '🌿', byPiece(15, [1, 2], 'bunch'), { tags: 'pudina', desc: 'Fresh pudina for chutney and drinks.' }],
+        ['Spinach', 'पालक', '🥬', byPiece(30, [1, 2], 'bunch'), { img: 'v-spinach', tags: 'palak', desc: 'Fresh palak bunch (approx. 250 g).' }],
+        ['Coriander Leaves', 'हरा धनिया', '🌿', byWeight(150, [0.1, 0.25]), { img: 'v-coriander', tags: 'dhaniya', desc: 'Fragrant green coriander for garnish and chutney.' }],
+        ['Methi', 'मेथी', '🌱', byPiece(25, [1, 2], 'bunch'), { img: 'v-methi', tags: 'methi,fenugreek', desc: 'Fresh fenugreek leaves bunch.' }],
+        ['Mint Leaves', 'पुदीना', '🌿', byPiece(15, [1, 2], 'bunch'), { img: 'v-mint', tags: 'pudina', desc: 'Fresh pudina for chutney and drinks.' }],
       ] },
       { name: 'Gourds, Beans & Brinjal', emoji: '🍆', color: '#F3E5F5', image: '/catalog/sub-gourds.png', products: [
         ['Cauliflower', 'फूलगोभी', '🥦', byPiece(40, [1, 2]), { img: 'cauliflower', best: 1, tags: 'gobhi,phool gobhi', desc: 'White, compact cauliflower, approx. 500–700 g per piece.' }],
         ['Brinjal Bharta (Round)', 'भरता बैंगन', '🍆', byWeight(50, [0.5, 1]), { img: 'brinjal-round', tags: 'baingan,bharta', desc: 'Large round brinjal, ideal for baingan bharta.' }],
         ['Brinjal Long', 'लम्बा बैंगन', '🍆', byWeight(48, [0.5, 1]), { img: 'brinjal-long', tags: 'baingan', desc: 'Long purple brinjal for sabzi and fry.' }],
         ['Flat Beans (Sem Phali)', 'सेम फली', '🫛', byWeight(90, [0.25, 0.5, 1]), { img: 'flat-beans', tags: 'sem,beans', desc: 'Tender flat beans, rich in fibre.' }],
-        ['Lady Finger', 'भिंडी', '🫛', byWeight(64, [0.25, 0.5, 1]), { tags: 'bhindi,okra', desc: 'Tender green bhindi.' }],
-        ['Bottle Gourd', 'लौकी', '🥒', byPiece(38, [1, 2]), { tags: 'lauki,dudhi', desc: 'Fresh lauki, approx. 700 g–1 kg per piece.' }],
+        ['Lady Finger', 'भिंडी', '🫛', byWeight(64, [0.25, 0.5, 1]), { img: 'v-okra', tags: 'bhindi,okra', desc: 'Tender green bhindi.' }],
+        ['Bottle Gourd', 'लौकी', '🥒', byPiece(38, [1, 2]), { img: 'v-lauki', tags: 'lauki,dudhi', desc: 'Fresh lauki, approx. 700 g–1 kg per piece.' }],
       ] },
       { name: 'Roots & Tubers', emoji: '🥕', color: '#FFF8E1', image: '/catalog/sub-roots.png', products: [
         ['Carrot', 'गाजर', '🥕', byWeight(56, [0.5, 1]), { img: 'carrot', feat: 1, tags: 'gajar', desc: 'Sweet orange carrots for salad, halwa and sabzi.' }],
@@ -122,7 +122,7 @@ const catalog = [
         ['Whole Wheat Atta', 'गेहूं आटा', '🌾', packs([['5 kg', 5, 'kg', 265, 310], ['10 kg', 10, 'kg', 510, 600]]), { img: 'g-atta', best: 1, feat: 1, tags: 'atta,aata,gehu,wheat flour', desc: 'Stone-ground whole wheat atta for soft rotis.' }],
         ['Besan (Gram Flour)', 'बेसन', '🌾', packs([['500 g', 500, 'g', 55, 65], ['1 kg', 1, 'kg', 105, 125]]), { tags: 'besan,gram flour', desc: 'Fine besan for pakoda, kadhi and sweets.' }],
         ['Maida', 'मैदा', '🌾', packs([['500 g', 500, 'g', 25, 30], ['1 kg', 1, 'kg', 45, 55]]), { img: 'g-maida', tags: 'maida,refined flour', desc: 'Refined wheat flour for baking and naan.' }],
-        ['Sooji (Rava)', 'सूजी', '🌾', packs([['500 g', 500, 'g', 30, 36], ['1 kg', 1, 'kg', 58, 68]]), { tags: 'suji,rava,semolina', desc: 'Fine sooji for upma, halwa and idli.' }],
+        ['Sooji (Rava)', 'सूजी', '🌾', packs([['500 g', 500, 'g', 30, 36], ['1 kg', 1, 'kg', 58, 68]]), { img: 'g-sooji', tags: 'suji,rava,semolina', desc: 'Fine sooji for upma, halwa and idli.' }],
       ] },
       { name: 'Rice & Dal', emoji: '🍚', color: '#FBE9E7', image: '/catalog/sub-rice-dal.png', products: [
         ['Basmati Rice', 'बासमती चावल', '🍚', packs([['1 kg', 1, 'kg', 140, 175], ['5 kg', 5, 'kg', 650, 820]]), { img: 'g-basmati', best: 1, tags: 'chawal,basmati,rice', desc: 'Long-grain aged basmati rice.' }],
