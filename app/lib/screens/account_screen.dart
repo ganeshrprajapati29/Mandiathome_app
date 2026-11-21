@@ -97,6 +97,8 @@ class AccountScreen extends StatelessWidget {
               context.read<StoreProvider>().loadWishlist();
               // MainShell notices the logout and returns to the login screen.
             }, color: AppColors.danger),
+            tile(Icons.delete_forever_outlined, 'Delete account', () => _confirmDelete(context),
+                sub: 'Permanently delete your account & data', color: AppColors.danger),
           ]),
         const SizedBox(height: 20),
         Center(child: Image.asset('assets/images/logo_wide.png', width: 130)),
@@ -104,6 +106,35 @@ class AccountScreen extends StatelessWidget {
         const SizedBox(height: 30),
       ]),
     );
+  }
+
+  Future<void> _confirmDelete(BuildContext context) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Delete account?'),
+        content: const Text(
+          'This permanently deletes your profile, mobile number, saved addresses, wishlist and cart. '
+          'Past order records are kept for tax purposes without your name, phone or address. This cannot be undone.',
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, true), child: const Text('Delete', style: TextStyle(color: AppColors.danger, fontWeight: FontWeight.w700))),
+        ],
+      ),
+    );
+    if (ok != true || !context.mounted) return;
+    try {
+      await context.read<AuthProvider>().deleteAccount();
+      if (!context.mounted) return;
+      context.read<CartProvider>().reset();
+      context.read<StoreProvider>().loadWishlist();
+      showSnack(context, 'Your account has been deleted');
+      // MainShell notices the logout and returns to the login screen.
+    } catch (e) {
+      if (context.mounted) showSnack(context, e.toString(), error: true);
+    }
   }
 
   Widget _group(List<Widget> children) => Container(

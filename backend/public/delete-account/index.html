@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Delete Account – Mandi At Home</title>
+<meta name="description" content="Request deletion of your Mandi At Home account and associated data." />
+<link rel="icon" href="logo.jpg" />
+<style>
+  :root { --g:#2E7D32; --gl:#E8F5E9; --tx:#1B2A1E; --mu:#5f6f62; --bd:#E3E8E2; --r:#C62828; --bg:#F5F7F4; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--tx); line-height:1.55; }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 24px 16px 48px; }
+  header { display:flex; align-items:center; gap:12px; margin-bottom:20px; }
+  header img { width:56px; height:56px; border-radius:14px; }
+  h1 { font-size:24px; margin:0; } h2 { font-size:18px; margin:24px 0 8px; }
+  .card { background:#fff; border:1px solid var(--bd); border-radius:16px; padding:20px; margin-bottom:16px; }
+  ul { padding-left: 20px; margin: 6px 0; } li { margin: 4px 0; }
+  .muted { color: var(--mu); font-size: 14px; }
+  label { display:block; font-weight:600; font-size:14px; margin:12px 0 6px; }
+  input { width:100%; padding:12px 14px; font-size:16px; border:1px solid var(--bd); border-radius:12px; }
+  input:focus { outline: 2px solid var(--gl); border-color: var(--g); }
+  .phone { display:flex; gap:8px; } .phone span { padding:12px 14px; border:1px solid var(--bd); border-radius:12px; background:#fafafa; font-weight:600; }
+  button { margin-top:14px; width:100%; padding:13px; font-size:16px; font-weight:700; border:0; border-radius:12px; cursor:pointer; background:var(--g); color:#fff; }
+  button.danger { background: var(--r); } button:disabled { opacity:.55; cursor:not-allowed; }
+  .msg { margin-top:12px; padding:10px 12px; border-radius:10px; font-size:14px; display:none; }
+  .msg.err { display:block; background:#FDECEA; color:var(--r); } .msg.ok { display:block; background:var(--gl); color:var(--g); }
+  .check { display:flex; gap:10px; align-items:flex-start; margin-top:12px; font-size:14px; } .check input { width:auto; margin-top:4px; }
+  .hidden { display:none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <img src="logo.jpg" alt="Mandi At Home logo" />
+    <div><h1>Delete your account</h1><div class="muted">Mandi At Home – fresh fruits, vegetables &amp; grocery delivery</div></div>
+  </header>
+
+  <div class="card">
+    <h2 style="margin-top:0">How to delete your account</h2>
+    <p><b>Option 1 – in the app:</b> open the Mandi At Home app → <b>Account</b> → <b>Delete account</b> → confirm.</p>
+    <p><b>Option 2 – on this page:</b> enter the mobile number you use to log in, verify it with the OTP we send by SMS, and confirm. Your account is deleted immediately.</p>
+    <p class="muted">Can't access your number? Email <a href="mailto:support@mandiathome.com?subject=Account%20deletion%20request">support@mandiathome.com</a> from the email on your account, or call support, with your registered mobile number. We complete such requests within 7 days after verifying that the account is yours.</p>
+
+    <h2>What is deleted</h2>
+    <ul>
+      <li>Your profile: name, mobile number, email</li>
+      <li>All saved delivery addresses and map locations</li>
+      <li>Your wishlist and cart</li>
+      <li>Login and OTP records</li>
+    </ul>
+    <h2>What is kept, and for how long</h2>
+    <ul>
+      <li>Past order records (items, amounts, dates, city and pincode) are kept for up to 8 years, as Indian tax and accounting law requires. Your name, phone number and street address are removed from them.</li>
+    </ul>
+    <p class="muted">Deletion is permanent and cannot be undone. You can sign up again later with the same number as a new customer.</p>
+  </div>
+
+  <div class="card" id="step1">
+    <h2 style="margin-top:0">Request deletion</h2>
+    <label for="phone">Registered mobile number</label>
+    <div class="phone"><span>+91</span><input id="phone" inputmode="numeric" maxlength="10" placeholder="10-digit mobile number" autocomplete="tel-national" /></div>
+    <button id="sendBtn">Send OTP</button>
+    <div class="msg" id="msg1"></div>
+  </div>
+
+  <div class="card hidden" id="step2">
+    <h2 style="margin-top:0">Verify &amp; delete</h2>
+    <p class="muted" id="sentTo"></p>
+    <label for="otp">OTP</label>
+    <input id="otp" inputmode="numeric" maxlength="8" placeholder="Enter OTP" autocomplete="one-time-code" />
+    <label class="check"><input type="checkbox" id="agree" /> I understand that my account and data will be permanently deleted.</label>
+    <button class="danger" id="delBtn" disabled>Delete my account</button>
+    <div class="msg" id="msg2"></div>
+  </div>
+
+  <div class="card hidden" id="done">
+    <h2 style="margin-top:0">✅ Account deleted</h2>
+    <p>Your Mandi At Home account and personal data have been deleted. Thank you for shopping with us.</p>
+  </div>
+</div>
+<script>
+  const api = (path, opts = {}) => fetch('/api' + path, { ...opts, headers: { 'Content-Type': 'application/json', ...(opts.headers || {}) } })
+    .then(async (r) => { const d = await r.json().catch(() => ({})); if (!r.ok) throw new Error(d.message || 'Something went wrong'); return d; });
+  const $ = (id) => document.getElementById(id);
+  const show = (el, text, ok) => { el.textContent = text; el.className = 'msg ' + (ok ? 'ok' : 'err'); };
+  let phone = '';
+  $('phone').addEventListener('input', (e) => { e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10); });
+  $('otp').addEventListener('input', (e) => { e.target.value = e.target.value.replace(/\D/g, ''); });
+  $('agree').addEventListener('change', (e) => { $('delBtn').disabled = !e.target.checked; });
+  $('sendBtn').onclick = async () => {
+    phone = $('phone').value.trim();
+    if (!/^[6-9]\d{9}$/.test(phone)) return show($('msg1'), 'Please enter a valid 10-digit mobile number.');
+    $('sendBtn').disabled = true;
+    try {
+      await api('/auth/send-otp', { method: 'POST', body: JSON.stringify({ phone }) });
+      $('step2').classList.remove('hidden');
+      $('sentTo').textContent = 'We sent an OTP by SMS to +91 ' + phone + '.';
+      show($('msg1'), 'OTP sent.', true);
+      $('otp').focus();
+    } catch (e) { show($('msg1'), e.message); }
+    finally { setTimeout(() => { $('sendBtn').disabled = false; $('sendBtn').textContent = 'Resend OTP'; }, 30000); }
+  };
+  $('delBtn').onclick = async () => {
+    const otp = $('otp').value.trim();
+    if (!otp) return show($('msg2'), 'Please enter the OTP.');
+    $('delBtn').disabled = true;
+    try {
+      const v = await api('/auth/verify-otp', { method: 'POST', body: JSON.stringify({ phone, otp }) });
+      await api('/auth/me', { method: 'DELETE', headers: { Authorization: 'Bearer ' + v.token } });
+      $('step1').classList.add('hidden'); $('step2').classList.add('hidden'); $('done').classList.remove('hidden');
+    } catch (e) { show($('msg2'), e.message); $('delBtn').disabled = !$('agree').checked; }
+  };
+</script>
+</body>
+</html>

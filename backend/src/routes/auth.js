@@ -1,6 +1,8 @@
 const router = require('express').Router();
 const rateLimit = require('express-rate-limit');
 const User = require('../models/User');
+const Cart = require('../models/Cart');
+const Order = require('../models/Order');
 const { protect, signToken } = require('../middleware/auth');
 const { asyncHandler, ApiError } = require('../utils/helpers');
 
@@ -83,6 +85,24 @@ router.put('/me', protect, asyncHandler(async (req, res) => {
   if (fcmToken !== undefined) req.user.fcmToken = fcmToken;
   await req.user.save();
   res.json({ success: true, user: req.user });
+}));
+
+// DELETE /api/auth/me -> permanently deletes the logged-in customer's account (Google Play account deletion).
+// Removed: profile (name, phone, email), saved addresses, wishlist, cart, OTP data.
+// Kept: past order records needed for tax/accounting, with name, phone and street address removed.
+router.delete('/me', protect, asyncHandler(async (req, res) => {
+  const user = req.user;
+  if (user.role === 'admin') throw new ApiError(400, 'Admin accounts cannot be deleted from here');
+  await Cart.deleteOne({ user: user._id });
+  await Order.updateMany(
+    { user: user._id },
+    {
+      $set: { 'address.name': 'Deleted user', 'address.phone': '', 'address.line1': '', 'address.line2': '', 'address.landmark': '', 'address.lat': null, 'address.lng': null, note: '' },
+    }
+  );
+  await User.deleteOne({ _id: user._id });
+  console.log(`[account] deleted user ${user._id}`);
+  res.json({ success: true, message: 'Your account and personal data have been deleted.' });
 }));
 
 module.exports = router;

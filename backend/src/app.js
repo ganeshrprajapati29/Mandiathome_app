@@ -18,6 +18,7 @@ if (process.env.NODE_ENV !== 'test') app.use(morgan('tiny'));
 
 app.use('/uploads', express.static(path.join(__dirname, '../uploads'), { maxAge: '7d' }));
 app.use('/catalog', express.static(path.join(__dirname, '../public/catalog'), { maxAge: '30d' }));
+app.use(['/delete-account', '/account-deletion'], express.static(path.join(__dirname, '../public/delete-account')));
 app.use('/admin', express.static(path.join(__dirname, '../public/admin')));
 
 const apiInfo = (req, res) => res.json({

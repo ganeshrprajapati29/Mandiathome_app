@@ -97,6 +97,12 @@ npm run dev
 
 ---
 
+## 🗑️ Account deletion (Google Play)
+
+- **Delete account URL** (Play Console → App content → Data safety / Account deletion): `http://<server-ip>:6055/delete-account/`
+- Users can also delete their account in the app: **Account → Delete account**.
+- API: `DELETE /api/auth/me`. It removes the profile, addresses, wishlist and cart. Old orders are kept with name, phone and street address removed.
+
 ## 📱 Flutter app
 
 ```bash

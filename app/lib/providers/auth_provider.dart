@@ -53,6 +53,12 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Permanently deletes the account on the server, then signs out.
+  Future<void> deleteAccount() async {
+    await _api.delete('/auth/me');
+    await logout();
+  }
+
   Future<void> logout() async {
     await _api.setToken(null);
     user = null;
