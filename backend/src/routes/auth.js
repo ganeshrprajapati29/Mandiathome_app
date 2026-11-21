@@ -7,27 +7,45 @@ const { asyncHandler, ApiError } = require('../utils/helpers');
 const otpLimiter = rateLimit({ windowMs: 10 * 60 * 1000, max: 10, message: { success: false, message: 'Too many OTP requests, try later' } });
 
 const crypto = require('crypto');
+const { sendOtpSms, isSmsConfigured } = require('../utils/sms');
 
 const normalizePhone = (p = '') => p.replace(/\D/g, '').slice(-10);
-
-// Hook your SMS provider here (MSG91 / Twilio / Fast2SMS etc.)
-async function sendSms(phone, otp) {
-  console.log(`[OTP] ${phone} -> ${otp}`);
-}
+const OTP_LENGTH = Math.min(8, Math.max(4, parseInt(process.env.OTP_LENGTH, 10) || 6));
+const OTP_TTL_MIN = parseInt(process.env.OTP_TTL_MINUTES, 10) || 10;
+const RESEND_GAP_SEC = 30;
 
 // POST /api/auth/send-otp { phone }
 router.post('/send-otp', otpLimiter, asyncHandler(async (req, res) => {
   const phone = normalizePhone(req.body.phone);
-  if (phone.length !== 10) throw new ApiError(400, 'Enter a valid 10-digit mobile number');
-  const devMode = process.env.OTP_DEV_MODE === 'true';
-  const code = String(crypto.randomInt(1000, 10000)); // fresh random 4-digit OTP every time
+  if (!/^[6-9]\d{9}$/.test(phone)) throw new ApiError(400, 'Enter a valid 10-digit mobile number');
   let user = await User.findOne({ phone });
+  if (user?.isBlocked) throw new ApiError(403, 'Your account has been blocked');
+  if (user?.otp?.sentAt && Date.now() - user.otp.sentAt.getTime() < RESEND_GAP_SEC * 1000) {
+    const wait = Math.ceil((RESEND_GAP_SEC * 1000 - (Date.now() - user.otp.sentAt.getTime())) / 1000);
+    throw new ApiError(429, `Please wait ${wait} seconds before requesting a new OTP`);
+  }
+  const code = String(crypto.randomInt(10 ** (OTP_LENGTH - 1), 10 ** OTP_LENGTH)); // fresh random OTP every time
   if (!user) user = new User({ phone });
-  user.otp = { code, expiresAt: new Date(Date.now() + 5 * 60 * 1000), attempts: 0 };
+  user.otp = { code, expiresAt: new Date(Date.now() + OTP_TTL_MIN * 60 * 1000), attempts: 0, sentAt: new Date() };
   await user.save();
-  await sendSms(phone, code);
-  // In OTP_DEV_MODE the OTP is returned so the app can show it on screen (until an SMS gateway is connected).
-  res.json({ success: true, message: 'OTP sent successfully', expiresIn: 300, ...(devMode ? { devOtp: code } : {}) });
+
+  // Real SMS when Fast2SMS is configured. OTP_DEV_MODE=true additionally returns the OTP (testing only).
+  const devMode = process.env.OTP_DEV_MODE === 'true' || !isSmsConfigured();
+  try {
+    await sendOtpSms(phone, code);
+  } catch (e) {
+    user.otp = undefined; // don't leave a usable OTP that was never delivered
+    await user.save();
+    throw e;
+  }
+  res.json({
+    success: true,
+    message: devMode ? 'OTP generated (test mode)' : 'OTP sent to your mobile number',
+    otpLength: OTP_LENGTH,
+    expiresIn: OTP_TTL_MIN * 60,
+    resendIn: RESEND_GAP_SEC,
+    ...(devMode ? { devOtp: code } : {}),
+  });
 }));
 
 // POST /api/auth/verify-otp { phone, otp }

@@ -31,9 +31,11 @@ class AuthProvider extends ChangeNotifier {
   }
 
   /// Returns dev OTP when backend is in OTP_DEV_MODE (for testing).
-  Future<String?> sendOtp(String phone) async {
+  /// Sends an OTP. Returns the OTP length and, only in test mode, the OTP itself.
+  Future<({String? devOtp, int length})> sendOtp(String phone) async {
     final r = await _api.post('/auth/send-otp', {'phone': phone});
-    return r['devOtp']?.toString();
+    final len = r['otpLength'];
+    return (devOtp: r['devOtp']?.toString(), length: len is num ? len.toInt() : 6);
   }
 
   /// Returns true if the user still needs to set their name.

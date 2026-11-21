@@ -41,9 +41,9 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     FocusScope.of(context).unfocus();
     setState(() => _loading = true);
     try {
-      final dev = await context.read<AuthProvider>().sendOtp(p);
+      final r = await context.read<AuthProvider>().sendOtp(p);
       if (!mounted) return;
-      final ok = await Navigator.push<bool>(context, MaterialPageRoute(builder: (_) => OtpScreen(phone: p, devOtp: dev)));
+      final ok = await Navigator.push<bool>(context, MaterialPageRoute(builder: (_) => OtpScreen(phone: p, devOtp: r.devOtp, length: r.length)));
       if (ok != true || !mounted) return;
       if (widget.gate) {
         // First-time users: ask for delivery location right away.
@@ -214,14 +214,16 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 class OtpScreen extends StatefulWidget {
   final String phone;
   final String? devOtp;
-  const OtpScreen({super.key, required this.phone, this.devOtp});
+  final int length;
+  const OtpScreen({super.key, required this.phone, this.devOtp, this.length = 6});
   @override
   State<OtpScreen> createState() => _OtpScreenState();
 }
 
 class _OtpScreenState extends State<OtpScreen> with SingleTickerProviderStateMixin {
-  final _ctrls = List.generate(4, (_) => TextEditingController());
-  final _nodes = List.generate(4, (_) => FocusNode());
+  late final int _n = widget.length;
+  late final _ctrls = List.generate(_n, (_) => TextEditingController());
+  late final _nodes = List.generate(_n, (_) => FocusNode());
   late final AnimationController _shake = AnimationController(vsync: this, duration: const Duration(milliseconds: 450));
   bool _loading = false;
   int _seconds = 30;
@@ -243,7 +245,7 @@ class _OtpScreenState extends State<OtpScreen> with SingleTickerProviderStateMix
   }
 
   Future<void> _fill(String code) async {
-    for (var i = 0; i < 4 && i < code.length; i++) {
+    for (var i = 0; i < _n && i < code.length; i++) {
       if (!mounted) return;
       _ctrls[i].text = code[i];
       setState(() {});
@@ -281,7 +283,7 @@ class _OtpScreenState extends State<OtpScreen> with SingleTickerProviderStateMix
   String get _otp => _ctrls.map((c) => c.text).join();
 
   Future<void> _verify() async {
-    if (_otp.length != 4 || _loading) return;
+    if (_otp.length != _n || _loading) return;
     _autoFill?.cancel();
     setState(() => _loading = true);
     try {
@@ -312,11 +314,11 @@ class _OtpScreenState extends State<OtpScreen> with SingleTickerProviderStateMix
       c.clear();
     }
     try {
-      final dev = await context.read<AuthProvider>().sendOtp(widget.phone);
+      final r = await context.read<AuthProvider>().sendOtp(widget.phone);
       _startTimer();
-      setState(() => _otpShown = dev);
+      setState(() => _otpShown = r.devOtp);
       _scheduleAutoFill();
-      if (mounted) showSnack(context, 'New OTP sent');
+      if (mounted) showSnack(context, r.devOtp == null ? 'New OTP sent by SMS' : 'New OTP sent');
     } catch (e) {
       if (mounted) showSnack(context, e.toString(), error: true);
     }
@@ -373,7 +375,7 @@ class _OtpScreenState extends State<OtpScreen> with SingleTickerProviderStateMix
         const Text('Verify OTP', style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800)),
         const SizedBox(height: 6),
         Text.rich(TextSpan(children: [
-          const TextSpan(text: 'Enter the 4-digit code sent to ', style: TextStyle(color: AppColors.textMuted)),
+          TextSpan(text: 'Enter the $_n-digit code sent by SMS to ', style: const TextStyle(color: AppColors.textMuted)),
           TextSpan(text: '+91 ${widget.phone}', style: const TextStyle(fontWeight: FontWeight.w700)),
         ])),
         TextButton(
@@ -387,12 +389,12 @@ class _OtpScreenState extends State<OtpScreen> with SingleTickerProviderStateMix
           builder: (_, child) => Transform.translate(offset: Offset(sin(_shake.value * pi * 6) * 10 * (1 - _shake.value), 0), child: child),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: List.generate(4, (i) {
+            children: List.generate(_n, (i) {
               final filled = _ctrls[i].text.isNotEmpty;
               return AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                width: 64,
-                height: 68,
+                width: _n > 4 ? 48 : 64,
+                height: _n > 4 ? 58 : 68,
                 decoration: BoxDecoration(
                   color: filled ? AppColors.soft : Colors.white,
                   borderRadius: BorderRadius.circular(16),
@@ -418,9 +420,9 @@ class _OtpScreenState extends State<OtpScreen> with SingleTickerProviderStateMix
                   ),
                   onChanged: (v) {
                     setState(() {});
-                    if (v.isNotEmpty && i < 3) _nodes[i + 1].requestFocus();
+                    if (v.isNotEmpty && i < _n - 1) _nodes[i + 1].requestFocus();
                     if (v.isEmpty && i > 0) _nodes[i - 1].requestFocus();
-                    if (_otp.length == 4) _verify();
+                    if (_otp.length == _n) _verify();
                   },
                 ),
               );

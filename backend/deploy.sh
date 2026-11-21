@@ -81,6 +81,19 @@ PUBLIC_URL=http://$IP:$PORT
 ENV
 fi
 
+# --- optional settings passed on the command line, e.g.
+#   curl -fsSL .../deploy.sh | FAST2SMS_API_KEY=xxxx bash
+set_env() { # set_env KEY VALUE  -> add or replace KEY in .env
+  if grep -q "^$1=" .env; then sed -i "s|^$1=.*|$1=$2|" .env; else echo "$1=$2" >> .env; fi
+}
+[ -n "${FAST2SMS_API_KEY:-}" ] && { set_env FAST2SMS_API_KEY "$FAST2SMS_API_KEY"; log "Fast2SMS key saved to .env"; }
+grep -q '^FAST2SMS_SENDER_ID=' .env   || set_env FAST2SMS_SENDER_ID "${FAST2SMS_SENDER_ID:-CITGDN}"
+grep -q '^FAST2SMS_TEMPLATE_ID=' .env || set_env FAST2SMS_TEMPLATE_ID "${FAST2SMS_TEMPLATE_ID:-199510}"
+grep -q '^OTP_LENGTH=' .env           || set_env OTP_LENGTH 6
+# Real SMS configured -> stop showing the OTP on screen
+if grep -q '^FAST2SMS_API_KEY=..*' .env; then set_env OTP_DEV_MODE "${OTP_DEV_MODE:-false}"; fi
+[ -n "${OTP_DEV_MODE:-}" ] && set_env OTP_DEV_MODE "$OTP_DEV_MODE"
+
 # migrate old installs from port 5055 (clashes with another app) to the new default
 if grep -q '^PORT=5055$' .env; then
   log "Moving API from port 5055 to $PORT"
@@ -118,3 +131,4 @@ curl -fsS "http://127.0.0.1:$P/api/health" >/dev/null && log "✅ API is live on
 echo
 echo "  API:    http://<server-ip>:$P/api"
 echo "  Admin:  http://<server-ip>:$P/admin   (admin@mandiathome.com / Admin@123 — change it!)"
+if grep -q '^FAST2SMS_API_KEY=..*' .env; then echo "  OTP:    Fast2SMS enabled (OTP_DEV_MODE=$(grep ^OTP_DEV_MODE= .env | cut -d= -f2))"; else echo "  OTP:    test mode (shown in app). Add SMS: FAST2SMS_API_KEY=xxx bash deploy.sh"; fi

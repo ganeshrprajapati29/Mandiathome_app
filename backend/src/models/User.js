@@ -26,7 +26,7 @@ const userSchema = new mongoose.Schema(
     avatar: String,
     addresses: [addressSchema],
     wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }],
-    otp: { code: String, expiresAt: Date, attempts: { type: Number, default: 0 } },
+    otp: { code: String, expiresAt: Date, attempts: { type: Number, default: 0 }, sentAt: Date },
     isBlocked: { type: Boolean, default: false },
     fcmToken: String,
   },
