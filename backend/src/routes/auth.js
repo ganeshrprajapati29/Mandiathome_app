@@ -16,12 +16,24 @@ const OTP_LENGTH = Math.min(8, Math.max(4, parseInt(process.env.OTP_LENGTH, 10) 
 const OTP_TTL_MIN = parseInt(process.env.OTP_TTL_MINUTES, 10) || 10;
 const RESEND_GAP_SEC = 30;
 
+// App Store / Play Store review account: fixed number + fixed OTP, no SMS sent.
+// Override with REVIEW_PHONE / REVIEW_OTP in .env; set REVIEW_PHONE=off to disable.
+const REVIEW_PHONE = normalizePhone(process.env.REVIEW_PHONE || '9999999999');
+const REVIEW_OTP = String(process.env.REVIEW_OTP || '123456');
+const isReviewPhone = (phone) => process.env.REVIEW_PHONE !== 'off' && phone === REVIEW_PHONE;
+
 // POST /api/auth/send-otp { phone }
 router.post('/send-otp', otpLimiter, asyncHandler(async (req, res) => {
   const phone = normalizePhone(req.body.phone);
   if (!/^[6-9]\d{9}$/.test(phone)) throw new ApiError(400, 'Enter a valid 10-digit mobile number');
   let user = await User.findOne({ phone });
   if (user?.isBlocked) throw new ApiError(403, 'Your account has been blocked');
+  if (isReviewPhone(phone)) {
+    if (!user) user = new User({ phone });
+    user.otp = { code: REVIEW_OTP, expiresAt: new Date(Date.now() + OTP_TTL_MIN * 60 * 1000), attempts: 0, sentAt: new Date() };
+    await user.save();
+    return res.json({ success: true, message: 'OTP sent to your mobile number', otpLength: REVIEW_OTP.length, expiresIn: OTP_TTL_MIN * 60, resendIn: RESEND_GAP_SEC });
+  }
   if (user?.otp?.sentAt && Date.now() - user.otp.sentAt.getTime() < RESEND_GAP_SEC * 1000) {
     const wait = Math.ceil((RESEND_GAP_SEC * 1000 - (Date.now() - user.otp.sentAt.getTime())) / 1000);
     throw new ApiError(429, `Please wait ${wait} seconds before requesting a new OTP`);
