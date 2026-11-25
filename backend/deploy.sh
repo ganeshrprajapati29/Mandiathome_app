@@ -130,8 +130,9 @@ pm2 save
 # open port in ufw only if ufw is active
 if command -v ufw >/dev/null 2>&1 && ufw status | grep -q "Status: active"; then ufw allow "$(grep ^PORT= .env | cut -d= -f2)"/tcp || true; fi
 
-sleep 3
-curl -fsS "http://127.0.0.1:$P/api/health" >/dev/null && log "✅ API is live on port $P" || warn "API did not respond yet — check: pm2 logs mandiathome-api"
+OK=""
+for _ in $(seq 1 20); do curl -fsS "http://127.0.0.1:$P/api/health" >/dev/null && { OK=1; break; }; sleep 2; done
+[ -n "$OK" ] && log "✅ API is live on port $P" || warn "API did not respond within 40 s — check: pm2 logs mandiathome-api --lines 40"
 echo
 echo "  API:    http://<server-ip>:$P/api"
 echo "  Admin:  http://<server-ip>:$P/admin   (admin@mandiathome.com / Admin@123 — change it!)"

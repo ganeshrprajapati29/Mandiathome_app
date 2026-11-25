@@ -105,7 +105,7 @@ It changes nothing else on the server: it creates its own nginx site file only, 
 curl -fsSL https://raw.githubusercontent.com/ganeshrprajapati29/Mandiathome_app/main/backend/setup-ssl.sh | bash
 # own domain (A record → server IP):  ... | DOMAIN=api.example.com EMAIL=you@example.com bash
 ```
-Without `DOMAIN` it uses `<ip-with-dashes>.sslip.io`, for example `https://72-60-41-224.sslip.io`. That name resolves to the server IP, so no DNS setup is needed.
+Without `DOMAIN` it uses `mandiathome.<ip-with-dashes>.sslip.io`, for example `https://mandiathome.72-60-41-224.sslip.io`. That name resolves to the server IP, so no DNS setup is needed.
 
 ## 💳 Online payment (Razorpay)
 

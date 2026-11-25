@@ -20,14 +20,16 @@ ENV_FILE="$APP_DIR/backend/.env"
 PORT=$(grep '^PORT=' "$ENV_FILE" | cut -d= -f2); PORT=${PORT:-6055}
 
 IP=$(curl -fsS https://api.ipify.org 2>/dev/null || hostname -I | awk '{print $1}')
-DOMAIN="${DOMAIN:-$(echo "$IP" | tr . -).sslip.io}"
+# Own sub-name so we never collide with another site that uses <ip>.sslip.io
+DOMAIN="${DOMAIN:-mandiathome.$(echo "$IP" | tr . -).sslip.io}"
 log "Domain: $DOMAIN  →  127.0.0.1:$PORT"
 
 # 1) DNS must point here
 RESOLVED=$(getent ahostsv4 "$DOMAIN" | awk 'NR==1{print $1}' || true)
 [ "$RESOLVED" = "$IP" ] || die "$DOMAIN resolves to '${RESOLVED:-nothing}', not this server ($IP). Fix the DNS A record and run again."
 
-# 2) API must be running
+# 2) API must be running (wait up to 40 s, the server may be busy)
+for _ in $(seq 1 20); do curl -fsS "http://127.0.0.1:$PORT/api/health" >/dev/null && break; sleep 2; done
 curl -fsS "http://127.0.0.1:$PORT/api/health" >/dev/null || die "API is not answering on port $PORT. Run deploy.sh first (pm2 logs mandiathome-api)."
 
 # 3) Port 80 must be free or served by nginx (we never stop another web server)
@@ -48,8 +50,10 @@ if [ -d /etc/nginx/sites-available ]; then
 else
   CONF=/etc/nginx/conf.d/mandiathome-api.conf; LINK=""
 fi
-if grep -rqs "server_name[^;]*\b$DOMAIN\b" /etc/nginx/ --exclude="mandiathome-api.conf*"; then
-  die "Another nginx site already uses server_name $DOMAIN. Not changing it."
+DOMAIN_RE=$(printf '%s' "$DOMAIN" | sed 's/[.]/\\./g')
+CLASH=$(grep -rlsE "server_name[^;]*[[:space:]]$DOMAIN_RE([[:space:];]|$)" /etc/nginx/ --exclude="mandiathome-api.conf*" || true)
+if [ -n "$CLASH" ]; then
+  die "Another nginx site already uses server_name $DOMAIN ($CLASH). Not changing it. Run again with DOMAIN=<another name>."
 fi
 if [ ! -f "$CONF" ] || ! grep -q "ssl_certificate" "$CONF"; then
   log "Writing $CONF"
