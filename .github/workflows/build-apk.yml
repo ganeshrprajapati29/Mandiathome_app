@@ -31,6 +31,11 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+          cache: gradle
+          cache-dependency-path: |
+            app/android/*.gradle*
+            app/android/app/*.gradle*
+            app/android/gradle/wrapper/gradle-wrapper.properties
 
       - uses: subosito/flutter-action@v2
         with:
@@ -70,11 +75,22 @@ jobs:
       - run: flutter pub get
       - run: flutter analyze --no-fatal-infos
 
+      # Maven Central sometimes answers 429 (rate limit) to shared runners — retry with a pause.
       - name: Build Play Store bundle (.aab)
-        run: flutter build appbundle --release --build-number=${{ steps.ver.outputs.code }} --build-name=${{ steps.ver.outputs.name }} --dart-define=API_HOST=$API_HOST
+        run: |
+          for i in 1 2 3; do
+            flutter build appbundle --release --build-number=${{ steps.ver.outputs.code }} --build-name=${{ steps.ver.outputs.name }} --dart-define=API_HOST=$API_HOST && exit 0
+            echo "Build attempt $i failed, retrying in $((i*60))s"; sleep $((i*60))
+          done
+          exit 1
 
       - name: Build APK
-        run: flutter build apk --release --build-number=${{ steps.ver.outputs.code }} --build-name=${{ steps.ver.outputs.name }} --dart-define=API_HOST=$API_HOST
+        run: |
+          for i in 1 2 3; do
+            flutter build apk --release --build-number=${{ steps.ver.outputs.code }} --build-name=${{ steps.ver.outputs.name }} --dart-define=API_HOST=$API_HOST && exit 0
+            echo "Build attempt $i failed, retrying in $((i*60))s"; sleep $((i*60))
+          done
+          exit 1
 
       - name: Check signatures
         run: |
