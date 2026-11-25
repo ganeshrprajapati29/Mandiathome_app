@@ -97,6 +97,16 @@ npm run dev
 
 ---
 
+## 🔒 HTTPS (SSL)
+
+`backend/setup-ssl.sh` adds an nginx site and a free Let's Encrypt certificate (auto-renewing) in front of the API.
+It changes nothing else on the server: it creates its own nginx site file only, runs `nginx -t` before every reload, and stops if port 80 belongs to another web server.
+```bash
+curl -fsSL https://raw.githubusercontent.com/ganeshrprajapati29/Mandiathome_app/main/backend/setup-ssl.sh | bash
+# own domain (A record → server IP):  ... | DOMAIN=api.example.com EMAIL=you@example.com bash
+```
+Without `DOMAIN` it uses `<ip-with-dashes>.sslip.io`, for example `https://72-60-41-224.sslip.io`. That name resolves to the server IP, so no DNS setup is needed.
+
 ## 💳 Online payment (Razorpay)
 
 Flow: the app places an order → the backend creates a Razorpay order → the app opens Razorpay Checkout →
@@ -111,7 +121,7 @@ curl -fsSL https://raw.githubusercontent.com/ganeshrprajapati29/Mandiathome_app/
   | RAZORPAY_KEY_ID='rzp_live_xxx' RAZORPAY_KEY_SECRET='xxx' bash
 ```
 Optional webhook, which confirms the order even if the app closes during payment:
-Razorpay Dashboard → Webhooks → URL `http://<server>:6055/api/payments/razorpay/webhook`, events `payment.captured` and `order.paid`.
+Razorpay Dashboard → Webhooks → URL `https://<domain>/api/payments/razorpay/webhook` (run setup-ssl.sh first), events `payment.captured` and `order.paid`.
 Then pass the same secret as `RAZORPAY_WEBHOOK_SECRET=...` to the deploy command.
 The admin can switch online payment on or off under **Store Settings**.
 
