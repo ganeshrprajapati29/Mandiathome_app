@@ -5,7 +5,7 @@ let CATS = [];
 const $ = (s, el = document) => el.querySelector(s);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const money = (n) => '₹' + Number(n || 0).toLocaleString('en-IN');
-const STATUSES = ['placed', 'confirmed', 'packed', 'out_for_delivery', 'delivered', 'cancelled'];
+const STATUSES = ['payment_pending', 'placed', 'confirmed', 'packed', 'out_for_delivery', 'delivered', 'cancelled'];
 const UNITS = ['kg', 'g', 'pc', 'dozen', 'bunch', 'l', 'ml', 'pack', 'box'];
 const imgUrl = (u) => (!u ? '' : u.startsWith('http') ? u : location.origin + u);
 
@@ -86,7 +86,7 @@ pages.dashboard = async () => {
 const orderTable = (rows) => `<table><tr><th>Order</th><th>Customer</th><th>Items</th><th>Total</th><th>Payment</th><th>Status</th><th></th></tr>
 ${rows.map((o) => `<tr><td><b>${o.orderNo}</b><br><small class="muted">${new Date(o.createdAt).toLocaleString('en-IN')}</small></td>
 <td>${esc(o.user?.name || o.address?.name || '')}<br><small class="muted">${esc(o.user?.phone || '')}</small></td>
-<td>${o.items.length}</td><td><b>${money(o.grandTotal)}</b></td><td>${o.paymentMethod}<br><small class="muted">${o.paymentStatus}</small></td>
+<td>${o.items.length}</td><td><b>${money(o.grandTotal)}</b></td><td>${o.paymentMethod === 'ONLINE' ? 'Online' : 'COD'}<br><small class="muted">${esc(o.paymentStatus.replace(/_/g, ' '))}</small></td>
 <td><span class="pill ${o.status}">${o.status.replace(/_/g, ' ')}</span></td><td><button class="btn sm" onclick="viewOrder('${o._id}')">View</button></td></tr>`).join('') || '<tr><td colspan=7 class="muted">No orders yet</td></tr>'}</table>`;
 
 pages.orders = async () => {
@@ -105,12 +105,13 @@ window.viewOrder = safe(async (id) => {
   const a = o.address || {};
   openModal(`<h2>Order ${o.orderNo} <span class="pill ${o.status}">${o.status.replace(/_/g, ' ')}</span></h2>
   <div class="row2"><div><label>Customer</label><p>${esc(a.name)} • ${esc(a.phone)}<br>${esc(a.line1)} ${esc(a.line2 || '')}<br>${esc(a.landmark || '')} ${esc(a.city)} - ${esc(a.pincode)}</p></div>
-  <div><label>Delivery slot</label><p>${esc(o.deliverySlot?.date || '-')} ${esc(o.deliverySlot?.slot || '')}</p><label>Payment</label><p>${o.paymentMethod} • ${o.paymentStatus}</p>${o.note ? `<label>Note</label><p>${esc(o.note)}</p>` : ''}</div></div>
+  <div><label>Delivery slot</label><p>${esc(o.deliverySlot?.date || '-')} ${esc(o.deliverySlot?.slot || '')}</p><label>Payment</label><p>${o.paymentMethod === 'ONLINE' ? 'Online (Razorpay)' : 'Cash on Delivery'} • ${esc(o.paymentStatus.replace(/_/g, ' '))}
+  ${o.razorpayPaymentId ? `<br><small class="muted">Payment ID: ${esc(o.razorpayPaymentId)}</small>` : ''}${o.razorpayOrderId ? `<br><small class="muted">Razorpay order: ${esc(o.razorpayOrderId)}</small>` : ''}${o.refundId ? `<br><small class="muted">Refund ID: ${esc(o.refundId)}</small>` : ''}</p>${o.note ? `<label>Note</label><p>${esc(o.note)}</p>` : ''}</div></div>
   <table><tr><th>Item</th><th>Pack</th><th>Qty</th><th>Price</th><th>Total</th></tr>
   ${o.items.map((i) => `<tr><td>${esc(i.emoji || '')} ${esc(i.name)}</td><td>${esc(i.variantLabel)}</td><td>${i.qty}</td><td>${money(i.price)}</td><td>${money(i.total)}</td></tr>`).join('')}</table>
   <p style="text-align:right">Items: ${money(o.itemsTotal)} &nbsp; Coupon: -${money(o.couponDiscount)} &nbsp; Delivery: ${money(o.deliveryFee)} &nbsp; <b>Grand total: ${money(o.grandTotal)}</b></p>
   <div class="row2"><div><label>Update status</label><select id="newStatus">${STATUSES.map((s) => `<option ${s === o.status ? 'selected' : ''} value="${s}">${s.replace(/_/g, ' ')}</option>`).join('')}</select></div>
-  <div><label>Payment status</label><select id="newPay">${['pending', 'paid', 'failed', 'refunded'].map((s) => `<option ${s === o.paymentStatus ? 'selected' : ''}>${s}</option>`).join('')}</select></div></div>
+  <div><label>Payment status</label><select id="newPay">${['pending', 'paid', 'failed', 'refunded', 'refund_pending'].map((s) => `<option ${s === o.paymentStatus ? 'selected' : ''}>${s}</option>`).join('')}</select></div></div>
   <label>Note (optional)</label><input id="stNote"/>
   <div class="toolbar"><button class="btn primary" id="saveSt">Save</button><button class="btn" onclick="closeModal()">Close</button></div>
   <label>History</label>${o.statusHistory.map((h) => `<p><small>${new Date(h.at).toLocaleString('en-IN')}</small> — <b>${h.status}</b> ${esc(h.note || '')}</p>`).join('')}`);
@@ -308,7 +309,9 @@ pages.settings = async () => {
   <label>Delivery slots (one per line)</label><textarea name="deliverySlots" rows="4">${esc(s.deliverySlots.join('\n'))}</textarea>
   <label>Serviceable pincodes (comma separated, empty = all)</label><input name="serviceablePincodes" value="${esc(s.serviceablePincodes.join(','))}"/>
   <div class="toolbar"><label class="check"><input type="checkbox" name="isStoreOpen" ${s.isStoreOpen ? 'checked' : ''}/> Store open (accepting orders)</label>
-  <label class="check"><input type="checkbox" name="codEnabled" ${s.codEnabled ? 'checked' : ''}/> Cash on delivery</label></div>
+  <label class="check"><input type="checkbox" name="codEnabled" ${s.codEnabled ? 'checked' : ''}/> Cash on delivery</label>
+  <label class="check"><input type="checkbox" name="onlinePaymentEnabled" ${s.onlinePaymentEnabled ? 'checked' : ''}/> Online payment (Razorpay)</label></div>
+  <p class="muted">${s.onlinePaymentAvailable ? '✅ Razorpay keys found on the server.' : '⚠️ Razorpay keys are not set on the server — customers will only see Cash on Delivery.'}</p>
   <button class="btn primary">Save settings</button></form>`;
   $('#stf').onsubmit = safe(async (e) => {
     e.preventDefault(); const f = e.target;
@@ -317,7 +320,7 @@ pages.settings = async () => {
       deliveryFee: Number(f.deliveryFee.value), freeDeliveryAbove: Number(f.freeDeliveryAbove.value), minOrderAmount: Number(f.minOrderAmount.value), handlingFee: Number(f.handlingFee.value),
       deliverySlots: f.deliverySlots.value.split('\n').map((x) => x.trim()).filter(Boolean),
       serviceablePincodes: f.serviceablePincodes.value.split(',').map((x) => x.trim()).filter(Boolean),
-      isStoreOpen: f.isStoreOpen.checked, codEnabled: f.codEnabled.checked,
+      isStoreOpen: f.isStoreOpen.checked, codEnabled: f.codEnabled.checked, onlinePaymentEnabled: f.onlinePaymentEnabled.checked,
     } });
     toast('✅ Settings saved');
   });

@@ -93,6 +93,10 @@ grep -q '^OTP_LENGTH=' .env           || set_env OTP_LENGTH 6
 # Real SMS configured -> stop showing the OTP on screen
 if grep -q '^FAST2SMS_API_KEY=..*' .env; then set_env OTP_DEV_MODE "${OTP_DEV_MODE:-false}"; fi
 [ -n "${OTP_DEV_MODE:-}" ] && set_env OTP_DEV_MODE "$OTP_DEV_MODE"
+# Razorpay (online payment): RAZORPAY_KEY_ID=rzp_live_xxx RAZORPAY_KEY_SECRET=xxx [RAZORPAY_WEBHOOK_SECRET=xxx]
+[ -n "${RAZORPAY_KEY_ID:-}" ] && { set_env RAZORPAY_KEY_ID "$RAZORPAY_KEY_ID"; log "Razorpay key id saved to .env"; }
+[ -n "${RAZORPAY_KEY_SECRET:-}" ] && set_env RAZORPAY_KEY_SECRET "$RAZORPAY_KEY_SECRET"
+[ -n "${RAZORPAY_WEBHOOK_SECRET:-}" ] && set_env RAZORPAY_WEBHOOK_SECRET "$RAZORPAY_WEBHOOK_SECRET"
 
 # migrate old installs from port 5055 (clashes with another app) to the new default
 if grep -q '^PORT=5055$' .env; then
@@ -131,4 +135,5 @@ curl -fsS "http://127.0.0.1:$P/api/health" >/dev/null && log "✅ API is live on
 echo
 echo "  API:    http://<server-ip>:$P/api"
 echo "  Admin:  http://<server-ip>:$P/admin   (admin@mandiathome.com / Admin@123 — change it!)"
+if grep -q '^RAZORPAY_KEY_SECRET=..*' .env; then echo "  Pay:    Razorpay enabled ($(grep ^RAZORPAY_KEY_ID= .env | cut -d= -f2 | cut -c1-9)…)"; else echo "  Pay:    Razorpay not set (COD only). Add: RAZORPAY_KEY_ID=.. RAZORPAY_KEY_SECRET=.. bash deploy.sh"; fi
 if grep -q '^FAST2SMS_API_KEY=..*' .env; then echo "  OTP:    Fast2SMS enabled (OTP_DEV_MODE=$(grep ^OTP_DEV_MODE= .env | cut -d= -f2))"; else echo "  OTP:    test mode (shown in app). Add SMS: FAST2SMS_API_KEY=xxx bash deploy.sh"; fi

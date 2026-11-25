@@ -1,13 +1,16 @@
 const router = require('express').Router();
 const Order = require('../models/Order');
 const Product = require('../models/Product');
-const Coupon = require('../models/Coupon');
 const Setting = require('../models/Setting');
 const { protect, adminOnly } = require('../middleware/auth');
 const { asyncHandler, ApiError } = require('../utils/helpers');
 const { buildCartSummary } = require('../utils/pricing');
+const { isRazorpayConfigured, createRazorpayOrder, verifyPaymentSignature, fetchPayment } = require('../utils/razorpay');
+const { confirmOrder, cancelOrder, refundIfPaid } = require('../utils/orderPayments');
 
 router.use(protect);
+
+const onlineAvailable = (settings) => settings.onlinePaymentEnabled && isRazorpayConfigured();
 
 // POST /api/orders { addressId, paymentMethod, deliverySlot: {date, slot}, note }
 router.post('/', asyncHandler(async (req, res) => {
@@ -24,6 +27,11 @@ router.post('/', asyncHandler(async (req, res) => {
   }
   const paymentMethod = req.body.paymentMethod === 'ONLINE' ? 'ONLINE' : 'COD';
   if (paymentMethod === 'COD' && !settings.codEnabled) throw new ApiError(400, 'Cash on delivery is not available');
+  if (paymentMethod === 'ONLINE' && !onlineAvailable(settings)) throw new ApiError(400, 'Online payment is not available right now. Please choose Cash on Delivery.');
+
+  // A previous online attempt that was never paid holds stock — release it first.
+  const unpaid = await Order.find({ user: req.user._id, status: 'payment_pending' });
+  for (const o of unpaid) await cancelOrder(o, 'Replaced by a new order');
 
   // Reserve stock atomically per variant; roll back on failure.
   const reserved = [];
@@ -62,15 +70,79 @@ router.post('/', asyncHandler(async (req, res) => {
     grandTotal: summary.grandTotal,
     paymentMethod,
     note: req.body.note,
-    statusHistory: [{ status: 'placed', note: 'Order placed' }],
+    status: paymentMethod === 'ONLINE' ? 'payment_pending' : 'placed',
+    statusHistory: [paymentMethod === 'ONLINE' ? { status: 'payment_pending', note: 'Waiting for online payment' } : { status: 'placed', note: 'Order placed' }],
   });
 
-  if (order.couponCode) await Coupon.updateOne({ code: order.couponCode }, { $inc: { usedCount: 1 } });
-  cart.items = [];
-  cart.coupon = null;
-  await cart.save();
+  if (paymentMethod === 'COD') {
+    await confirmOrder(order);
+    return res.status(201).json({ success: true, data: order });
+  }
 
-  res.status(201).json({ success: true, data: order });
+  // ONLINE: create the Razorpay order; the app opens Razorpay Checkout with this payload.
+  let rzpOrder;
+  try {
+    rzpOrder = await createRazorpayOrder(order.grandTotal, order.orderNo, { orderId: String(order._id), orderNo: order.orderNo });
+  } catch (e) {
+    await cancelOrder(order, 'Could not start online payment');
+    throw e;
+  }
+  order.razorpayOrderId = rzpOrder.id;
+  await order.save();
+  res.status(201).json({
+    success: true,
+    data: order,
+    payment: {
+      provider: 'razorpay',
+      key: process.env.RAZORPAY_KEY_ID,
+      razorpayOrderId: rzpOrder.id,
+      amount: rzpOrder.amount, // paise
+      currency: rzpOrder.currency,
+      name: settings.storeName || 'Mandi At Home',
+      description: `Order #${order.orderNo}`,
+      prefill: { contact: req.user.phone ? `+91${req.user.phone}` : '', email: req.user.email || '', name: req.user.name || '' },
+    },
+  });
+}));
+
+// POST /api/orders/:id/verify-payment { razorpay_order_id, razorpay_payment_id, razorpay_signature }
+router.post('/:id/verify-payment', asyncHandler(async (req, res) => {
+  const order = await Order.findOne({ _id: req.params.id, user: req.user._id });
+  if (!order) throw new ApiError(404, 'Order not found');
+  if (order.paymentStatus === 'paid') return res.json({ success: true, data: order }); // already confirmed (e.g. by webhook)
+  const { razorpay_order_id: rOrder, razorpay_payment_id: rPay, razorpay_signature: sig } = req.body;
+  if (!rOrder || !rPay || rOrder !== order.razorpayOrderId || !verifyPaymentSignature(rOrder, rPay, sig)) {
+    throw new ApiError(400, 'Payment verification failed. If money was deducted it will be refunded automatically.');
+  }
+  if (order.status === 'cancelled') {
+    // Paid after the order expired (stock already released): record the payment, then refund it.
+    if (!['refunded', 'refund_pending'].includes(order.paymentStatus)) {
+      order.paymentStatus = 'paid';
+      order.razorpayPaymentId = rPay;
+      await refundIfPaid(order);
+    }
+    throw new ApiError(400, 'This order had expired, so your payment is being refunded. Please place the order again.');
+  }
+  // Double-check with Razorpay that the money was really captured/authorized for the right amount.
+  try {
+    const p = await fetchPayment(rPay);
+    if (p.order_id !== rOrder || p.amount !== Math.round(order.grandTotal * 100) || !['captured', 'authorized'].includes(p.status)) {
+      throw new ApiError(400, 'Payment details do not match this order');
+    }
+  } catch (e) {
+    if (e.status === 400) throw e;
+    console.warn('[razorpay] could not double-check payment, relying on signature:', e.message);
+  }
+  await confirmOrder(order, { paymentId: rPay });
+  res.json({ success: true, data: order });
+}));
+
+// POST /api/orders/:id/payment-failed { reason } -> customer closed / failed checkout
+router.post('/:id/payment-failed', asyncHandler(async (req, res) => {
+  const order = await Order.findOne({ _id: req.params.id, user: req.user._id });
+  if (!order) throw new ApiError(404, 'Order not found');
+  if (order.status === 'payment_pending') await cancelOrder(order, `Payment not completed${req.body.reason ? `: ${String(req.body.reason).slice(0, 120)}` : ''}`);
+  res.json({ success: true, data: order });
 }));
 
 // GET /api/orders  (own orders)   |  GET /api/orders?all=true&status=  (admin)
@@ -96,22 +168,12 @@ router.get('/:id', asyncHandler(async (req, res) => {
   res.json({ success: true, data: order });
 }));
 
-const restock = async (order) => {
-  for (const it of order.items) {
-    await Product.updateOne({ _id: it.product, 'variants._id': it.variantId }, { $inc: { 'variants.$.stock': it.qty, soldCount: -it.qty } });
-  }
-};
-
 // Customer cancel (only before packing)
 router.post('/:id/cancel', asyncHandler(async (req, res) => {
   const order = await Order.findOne({ _id: req.params.id, user: req.user._id });
   if (!order) throw new ApiError(404, 'Order not found');
   if (!['placed', 'confirmed'].includes(order.status)) throw new ApiError(400, 'Order can no longer be cancelled');
-  order.status = 'cancelled';
-  order.cancelReason = req.body.reason || 'Cancelled by customer';
-  order.statusHistory.push({ status: 'cancelled', note: order.cancelReason });
-  await order.save();
-  await restock(order);
+  await cancelOrder(order, req.body.reason || 'Cancelled by customer');
   res.json({ success: true, data: order });
 }));
 
@@ -122,14 +184,21 @@ router.put('/:id/status', adminOnly, asyncHandler(async (req, res) => {
   if (!order) throw new ApiError(404, 'Order not found');
   if (status && !Order.STATUSES.includes(status)) throw new ApiError(400, 'Invalid status');
   if (order.status === 'cancelled' && status && status !== 'cancelled') throw new ApiError(400, 'Cancelled order cannot be reopened');
-  if (status && status !== order.status) {
-    if (status === 'cancelled') await restock(order);
-    order.status = status;
-    order.statusHistory.push({ status, note });
-    if (status === 'delivered' && order.paymentMethod === 'COD') order.paymentStatus = 'paid';
+  if (status === 'payment_pending' && order.status !== 'payment_pending') throw new ApiError(400, 'Invalid status');
+  if (order.status === 'payment_pending' && status && !['payment_pending', 'cancelled'].includes(status)) {
+    throw new ApiError(400, 'This order is waiting for online payment. It can only be cancelled.');
   }
   if (paymentStatus) order.paymentStatus = paymentStatus;
-  await order.save();
+  if (status === 'cancelled' && order.status !== 'cancelled') {
+    await cancelOrder(order, note || 'Cancelled by store'); // restocks and refunds online payments
+  } else {
+    if (status && status !== order.status) {
+      order.status = status;
+      order.statusHistory.push({ status, note });
+      if (status === 'delivered' && order.paymentMethod === 'COD') order.paymentStatus = 'paid';
+    }
+    await order.save();
+  }
   res.json({ success: true, data: order });
 }));
 

@@ -90,12 +90,31 @@ class StoreProvider extends ChangeNotifier {
   // ---------- orders ----------
   Future<List<Order>> orders() async => ((await _api.get('/orders?limit=50'))['data'] as List).map((e) => Order.fromJson(e)).toList();
   Future<Order> order(String id) async => Order.fromJson((await _api.get('/orders/$id'))['data']);
-  Future<Order> placeOrder({required String addressId, required String paymentMethod, required String date, required String slot, String? note}) async =>
-      Order.fromJson((await _api.post('/orders', {
-        'addressId': addressId,
-        'paymentMethod': paymentMethod,
-        'deliverySlot': {'date': date, 'slot': slot},
-        'note': note,
+
+  /// Places an order. For ONLINE payment the result also carries the Razorpay checkout payload.
+  Future<({Order order, Map<String, dynamic>? payment})> placeOrder(
+      {required String addressId, required String paymentMethod, required String date, required String slot, String? note}) async {
+    final r = await _api.post('/orders', {
+      'addressId': addressId,
+      'paymentMethod': paymentMethod,
+      'deliverySlot': {'date': date, 'slot': slot},
+      'note': note,
+    });
+    return (order: Order.fromJson(r['data']), payment: (r['payment'] as Map?)?.cast<String, dynamic>());
+  }
+
+  Future<Order> verifyPayment(String orderId, {required String razorpayOrderId, required String paymentId, required String signature}) async =>
+      Order.fromJson((await _api.post('/orders/$orderId/verify-payment', {
+        'razorpay_order_id': razorpayOrderId,
+        'razorpay_payment_id': paymentId,
+        'razorpay_signature': signature,
       }))['data']);
+
+  Future<void> paymentFailed(String orderId, String reason) async {
+    try {
+      await _api.post('/orders/$orderId/payment-failed', {'reason': reason});
+    } catch (_) {}
+  }
+
   Future<Order> cancelOrder(String id, String reason) async => Order.fromJson((await _api.post('/orders/$id/cancel', {'reason': reason}))['data']);
 }

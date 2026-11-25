@@ -6,6 +6,10 @@ const Product = require('../models/Product');
 const Coupon = require('../models/Coupon');
 const Setting = require('../models/Setting');
 const { asyncHandler } = require('../utils/helpers');
+const { isRazorpayConfigured } = require('../utils/razorpay');
+
+// Settings as sent to the app (adds whether online payment can actually be used).
+const publicSettings = (s) => ({ ...s.toObject(), onlinePaymentAvailable: Boolean(s.onlinePaymentEnabled && isRazorpayConfigured()) });
 
 // GET /api/home -> everything the home screen needs in one call
 router.get('/home', asyncHandler(async (req, res) => {
@@ -23,7 +27,7 @@ router.get('/home', asyncHandler(async (req, res) => {
     category: { _id: c._id, name: c.name, emoji: c.emoji, color: c.color },
     products: await Product.find({ isActive: true, category: c._id }).sort({ soldCount: -1 }).limit(10),
   })));
-  res.json({ success: true, data: { banners, categories, featured, bestSellers, organic, sections: sections.filter((s) => s.products.length), settings } });
+  res.json({ success: true, data: { banners, categories, featured, bestSellers, organic, sections: sections.filter((s) => s.products.length), settings: publicSettings(settings) } });
 }));
 
 router.get('/banners', asyncHandler(async (req, res) => {
@@ -37,7 +41,7 @@ router.get('/coupons', asyncHandler(async (req, res) => {
 }));
 
 router.get('/settings', asyncHandler(async (req, res) => {
-  res.json({ success: true, data: await Setting.get() });
+  res.json({ success: true, data: publicSettings(await Setting.get()) });
 }));
 
 module.exports = router;

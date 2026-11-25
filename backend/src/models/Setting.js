@@ -17,6 +17,7 @@ const settingSchema = new mongoose.Schema(
     serviceablePincodes: { type: [String], default: [] }, // empty = all serviceable
     isStoreOpen: { type: Boolean, default: true },
     catalogVersion: { type: Number, default: 1 },
+    settingsVersion: { type: Number, default: 0 },
   },
   { timestamps: true }
 );

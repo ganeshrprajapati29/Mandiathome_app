@@ -97,6 +97,26 @@ npm run dev
 
 ---
 
+## 💳 Online payment (Razorpay)
+
+Flow: the app places an order → the backend creates a Razorpay order → the app opens Razorpay Checkout →
+the backend verifies the payment signature (and checks the amount with Razorpay) → the order is confirmed.
+If the payment is cancelled or fails, stock is released and the cart is kept.
+Unpaid online orders are cancelled after 30 minutes.
+Cancelling a paid order (by the customer or the admin) refunds it automatically through Razorpay.
+
+Add the keys on the VPS (they never go into the app or the repo):
+```bash
+curl -fsSL https://raw.githubusercontent.com/ganeshrprajapati29/Mandiathome_app/main/backend/deploy.sh \
+  | RAZORPAY_KEY_ID='rzp_live_xxx' RAZORPAY_KEY_SECRET='xxx' bash
+```
+Optional webhook, which confirms the order even if the app closes during payment:
+Razorpay Dashboard → Webhooks → URL `http://<server>:6055/api/payments/razorpay/webhook`, events `payment.captured` and `order.paid`.
+Then pass the same secret as `RAZORPAY_WEBHOOK_SECRET=...` to the deploy command.
+The admin can switch online payment on or off under **Store Settings**.
+
+API: `POST /api/orders` (paymentMethod `ONLINE` returns a `payment` payload) · `POST /api/orders/:id/verify-payment` · `POST /api/orders/:id/payment-failed` · `POST /api/payments/razorpay/webhook`.
+
 ## 🗑️ Account deletion (Google Play)
 
 - **Delete account URL** (Play Console → App content → Data safety / Account deletion): `http://<server-ip>:6055/delete-account/`

@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const STATUSES = ['placed', 'confirmed', 'packed', 'out_for_delivery', 'delivered', 'cancelled'];
+const STATUSES = ['payment_pending', 'placed', 'confirmed', 'packed', 'out_for_delivery', 'delivered', 'cancelled'];
 
 const orderSchema = new mongoose.Schema(
   {
@@ -34,7 +34,11 @@ const orderSchema = new mongoose.Schema(
     handlingFee: { type: Number, default: 0 },
     grandTotal: Number,
     paymentMethod: { type: String, enum: ['COD', 'ONLINE'], default: 'COD' },
-    paymentStatus: { type: String, enum: ['pending', 'paid', 'failed', 'refunded'], default: 'pending' },
+    paymentStatus: { type: String, enum: ['pending', 'paid', 'failed', 'refunded', 'refund_pending'], default: 'pending' },
+    razorpayOrderId: { type: String, index: true },
+    razorpayPaymentId: String,
+    paidAt: Date,
+    refundId: String,
     status: { type: String, enum: STATUSES, default: 'placed' },
     statusHistory: [{ status: String, note: String, at: { type: Date, default: Date.now } }],
     note: String,

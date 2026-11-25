@@ -283,6 +283,11 @@ const wipeCatalog = () => Promise.all([Category.deleteMany({}), Product.deleteMa
     settings.catalogVersion = CATALOG_VERSION;
     await settings.save();
   }
+  if ((settings.settingsVersion || 0) < 1) {
+    settings.onlinePaymentEnabled = true; // Razorpay shows up as soon as keys are in .env (admin can switch it off)
+    settings.settingsVersion = 1;
+    await settings.save();
+  }
 
   const email = (process.env.ADMIN_EMAIL || 'admin@mandiathome.com').toLowerCase();
   if (!(await User.findOne({ email }))) {

@@ -8,6 +8,7 @@ import '../widgets/common.dart';
 import '../widgets/osm_map.dart';
 
 Color statusColor(String s) => switch (s) {
+      'payment_pending' => const Color(0xFF546E7A),
       'placed' => const Color(0xFF1565C0),
       'confirmed' => const Color(0xFF5E35B1),
       'packed' => const Color(0xFFF57F17),
@@ -190,7 +191,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           : RefreshIndicator(
               onRefresh: _load,
               child: ListView(padding: const EdgeInsets.all(16), children: [
-                _box(o.status == 'cancelled' ? _cancelled(o) : _tracker(o)),
+                _box(o.status == 'cancelled'
+                    ? _cancelled(o)
+                    : o.status == 'payment_pending'
+                        ? _awaitingPayment(o)
+                        : _tracker(o)),
                 const SizedBox(height: 12),
                 _box(Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text('${o.itemCount} items in this order', style: const TextStyle(fontWeight: FontWeight.w700)),
@@ -220,7 +225,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   if (o.handlingFee > 0) _row('Handling charge', rupee(o.handlingFee)),
                   const Divider(),
                   _row('Total', rupee(o.grandTotal), bold: true),
-                  _row('Payment', '${o.paymentMethod == 'COD' ? 'Cash on Delivery' : 'Online'} • ${o.paymentStatus}'),
+                  _row('Payment', '${o.paymentMethod == 'COD' ? 'Cash on Delivery' : 'Online (Razorpay)'} • ${_payLabel(o.paymentStatus)}'),
+                  if (o.paymentId != null) _row('Payment ID', o.paymentId!),
+                  if (o.refundId != null) _row('Refund ID', o.refundId!),
                 ])),
                 const SizedBox(height: 12),
                 if (o.address != null)
@@ -264,6 +271,29 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         ]),
       );
 
+  String _payLabel(String s) => switch (s) {
+        'paid' => 'Paid',
+        'pending' => 'Pending',
+        'failed' => 'Failed',
+        'refunded' => 'Refunded',
+        'refund_pending' => 'Refund in progress',
+        _ => s,
+      };
+
+  Widget _awaitingPayment(Order o) => const Row(children: [
+        Text('⏳', style: TextStyle(fontSize: 30)),
+        SizedBox(width: 12),
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('Waiting for payment', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16)),
+            Text(
+                'If money was deducted, this order will be confirmed automatically in a few minutes. '
+                'Unpaid orders are cancelled after 30 minutes.',
+                style: TextStyle(color: AppColors.textMuted)),
+          ]),
+        ),
+      ]);
+
   Widget _cancelled(Order o) => Row(children: [
         const Text('❌', style: TextStyle(fontSize: 30)),
         const SizedBox(width: 12),
@@ -271,6 +301,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             const Text('Order cancelled', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.danger, fontSize: 16)),
             if (o.cancelReason != null) Text(o.cancelReason!, style: const TextStyle(color: AppColors.textMuted)),
+            if (o.paymentStatus == 'refunded')
+              const Text('💸 Refund started — it reaches your account in 5–7 working days.', style: TextStyle(color: AppColors.primary, fontSize: 12.5)),
+            if (o.paymentStatus == 'refund_pending')
+              const Text('💸 Your refund is being processed.', style: TextStyle(color: AppColors.primary, fontSize: 12.5)),
           ]),
         ),
       ]);

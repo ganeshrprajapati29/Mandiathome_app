@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:razorpay_flutter/razorpay_flutter.dart';
 import '../models/models.dart';
 import '../providers/auth_provider.dart';
 import '../providers/cart_provider.dart';
@@ -23,8 +24,26 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   String? _addressId;
   int _dayIndex = 0;
   String? _slot;
-  String _payment = 'COD';
+  String? _payment; // chosen in build() from what the store allows
   final _note = TextEditingController();
+  final _razorpay = Razorpay();
+  Order? _pendingOrder; // online order waiting for Razorpay result
+
+  @override
+  void initState() {
+    super.initState();
+    _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _onPaymentSuccess);
+    _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _onPaymentError);
+    _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _onExternalWallet);
+  }
+
+  @override
+  void dispose() {
+    _razorpay.clear();
+    _note.dispose();
+    super.dispose();
+  }
+
   bool _placing = false;
 
   List<DateTime> get _days => List.generate(3, (i) => DateTime.now().add(Duration(days: i)));
@@ -36,6 +55,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     final settings = context.watch<StoreProvider>().settings;
     final slots = settings.deliverySlots.isEmpty ? ['7 AM - 10 AM', '10 AM - 1 PM', '4 PM - 7 PM'] : settings.deliverySlots;
     _addressId ??= auth.defaultAddress?.id;
+    _payment ??= settings.onlinePaymentAvailable ? 'ONLINE' : 'COD';
+    if (_payment == 'ONLINE' && !settings.onlinePaymentAvailable) _payment = 'COD';
     final address = auth.addresses.where((a) => a.id == _addressId).firstOrNull ?? auth.defaultAddress;
 
     return Scaffold(
@@ -125,9 +146,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             ])),
         _section('Payment method', Icons.account_balance_wallet_outlined,
             child: Column(children: [
-              _payTile('COD', '💵', 'Cash / UPI on Delivery', 'Pay when your order arrives', enabled: settings.codEnabled),
+              _payTile('ONLINE', '💳', 'Pay Online', 'UPI, Cards, Netbanking, Wallets — secured by Razorpay', enabled: settings.onlinePaymentAvailable),
               const SizedBox(height: 8),
-              _payTile('ONLINE', '💳', 'Pay Online', 'UPI, Cards, Netbanking — coming soon', enabled: false),
+              _payTile('COD', '💵', 'Cash on Delivery', 'Pay cash or UPI when your order arrives', enabled: settings.codEnabled),
             ])),
         _section('Delivery instructions', Icons.edit_note,
             child: TextField(controller: _note, maxLines: 2, decoration: const InputDecoration(hintText: 'e.g. Ring the bell, leave at the door…'))),
@@ -142,7 +163,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           onPressed: _placing ? null : () => _place(address),
           child: _placing
               ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
-              : Text('Place Order  •  ${rupee(s.grandTotal)}'),
+              : Text(_payment == 'ONLINE' ? 'Pay ${rupee(s.grandTotal)} & Place Order' : 'Place Order  •  ${rupee(s.grandTotal)}'),
         ),
       ),
     );
@@ -151,27 +172,119 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   Future<void> _place(Address? address) async {
     if (address == null) return showSnack(context, 'Please add a delivery address', error: true);
     if (_slot == null) return showSnack(context, 'Please choose a delivery slot', error: true);
+    if (_payment == null) return showSnack(context, 'Please choose a payment method', error: true);
     setState(() => _placing = true);
     try {
-      final order = await context.read<StoreProvider>().placeOrder(
+      final r = await context.read<StoreProvider>().placeOrder(
             addressId: address.id,
-            paymentMethod: _payment,
+            paymentMethod: _payment!,
             date: DateFormat('yyyy-MM-dd').format(_days[_dayIndex]),
             slot: _slot!,
             note: _note.text.trim(),
           );
       if (!mounted) return;
-      context.read<CartProvider>().reset();
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => OrderSuccessScreen(order: order)),
-        (r) => r.isFirst,
-      );
+      if (r.payment != null) {
+        _openRazorpay(r.order, r.payment!, address);
+        return; // _placing stays true until Razorpay answers
+      }
+      _finish(r.order);
     } catch (e) {
       if (mounted) showSnack(context, e.toString(), error: true);
       if (mounted) context.read<CartProvider>().load();
-    } finally {
       if (mounted) setState(() => _placing = false);
     }
+  }
+
+  void _openRazorpay(Order order, Map<String, dynamic> p, Address address) {
+    _pendingOrder = order;
+    final prefill = (p['prefill'] as Map?)?.cast<String, dynamic>() ?? {};
+    final options = <String, dynamic>{
+      'key': p['key'],
+      'order_id': p['razorpayOrderId'],
+      'amount': p['amount'],
+      'currency': p['currency'] ?? 'INR',
+      'name': p['name'] ?? 'Mandi At Home',
+      'description': p['description'] ?? 'Order #${order.orderNo}',
+      'timeout': 600,
+      'prefill': {
+        'contact': (prefill['contact'] as String?)?.isNotEmpty == true ? prefill['contact'] : '+91${address.phone}',
+        'email': prefill['email'] ?? '',
+        'name': (prefill['name'] as String?)?.isNotEmpty == true ? prefill['name'] : address.name,
+      },
+      'notes': {'order_no': order.orderNo},
+      'theme': {'color': '#2E7D32'},
+      'retry': {'enabled': true, 'max_count': 3},
+      'send_sms_hash': true,
+    };
+    try {
+      _razorpay.open(options);
+    } catch (e) {
+      _onPaymentError(PaymentFailureResponse(Razorpay.UNKNOWN_ERROR, 'Could not open payment page', null));
+    }
+  }
+
+  Future<void> _onPaymentSuccess(PaymentSuccessResponse r) async {
+    final order = _pendingOrder;
+    if (order == null) return;
+    try {
+      final paid = await context.read<StoreProvider>().verifyPayment(
+            order.id,
+            razorpayOrderId: r.orderId ?? '',
+            paymentId: r.paymentId ?? '',
+            signature: r.signature ?? '',
+          );
+      if (!mounted) return;
+      _pendingOrder = null;
+      _finish(paid);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _placing = false);
+      await showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Payment received — confirming'),
+          content: Text('$e\n\nIf money was deducted, your order will be confirmed automatically in a few minutes, or the amount will be refunded. '
+              'You can check it in My Orders.'),
+          actions: [TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('OK'))],
+        ),
+      );
+      if (mounted) context.read<CartProvider>().load();
+    }
+  }
+
+  Future<void> _onPaymentError(PaymentFailureResponse r) async {
+    final order = _pendingOrder;
+    _pendingOrder = null;
+    final cancelled = r.code == Razorpay.PAYMENT_CANCELLED;
+    if (order != null) await context.read<StoreProvider>().paymentFailed(order.id, cancelled ? 'Cancelled by customer' : (r.message ?? 'Payment failed'));
+    if (!mounted) return;
+    setState(() => _placing = false);
+    context.read<CartProvider>().load();
+    showSnack(context, cancelled ? 'Payment cancelled. Your cart is saved — try again or choose Cash on Delivery.' : 'Payment failed: ${_friendly(r.message)}',
+        error: true);
+  }
+
+  void _onExternalWallet(ExternalWalletResponse r) {
+    showSnack(context, 'Complete the payment in ${r.walletName ?? 'your wallet'} app');
+  }
+
+  String _friendly(String? m) {
+    if (m == null || m.isEmpty) return 'please try again';
+    try {
+      // Razorpay sometimes sends a JSON string
+      final match = RegExp(r'"description"\s*:\s*"([^"]+)"').firstMatch(m);
+      if (match != null) return match.group(1)!;
+    } catch (_) {}
+    return m.length > 120 ? '${m.substring(0, 120)}…' : m;
+  }
+
+  void _finish(Order order) {
+    context.read<CartProvider>().reset();
+    context.read<CartProvider>().load();
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => OrderSuccessScreen(order: order)),
+      (r) => r.isFirst,
+    );
   }
 
   Widget _chip(String t) => Container(
@@ -298,7 +411,7 @@ class _OrderSuccessScreenState extends State<OrderSuccessScreen> with SingleTick
                             Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 40),
                               child: Text(
-                                'Your fresh basket of ${o.itemCount} items will be delivered ${o.slot != null ? 'between ${o.slot}' : 'soon'}. Total ${rupee(o.grandTotal)} (${o.paymentMethod == 'COD' ? 'Cash on Delivery' : 'Online'}).',
+                                'Your fresh basket of ${o.itemCount} items will be delivered ${o.slot != null ? 'between ${o.slot}' : 'soon'}. Total ${rupee(o.grandTotal)} (${o.paymentMethod == 'COD' ? 'Cash on Delivery' : 'Paid online ✓'}).',
                                 textAlign: TextAlign.center,
                                 style: const TextStyle(color: AppColors.textMuted, height: 1.5),
                               ),

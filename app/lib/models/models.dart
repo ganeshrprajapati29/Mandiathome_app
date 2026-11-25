@@ -133,7 +133,7 @@ class BannerItem {
 class StoreSettings {
   final double deliveryFee, freeDeliveryAbove, minOrderAmount;
   final List<String> deliverySlots;
-  final bool codEnabled, isStoreOpen;
+  final bool codEnabled, isStoreOpen, onlinePaymentAvailable;
   final String supportPhone, supportEmail;
   StoreSettings(
       {this.deliveryFee = 30,
@@ -142,6 +142,7 @@ class StoreSettings {
       this.deliverySlots = const [],
       this.codEnabled = true,
       this.isStoreOpen = true,
+      this.onlinePaymentAvailable = false,
       this.supportPhone = '',
       this.supportEmail = ''});
   factory StoreSettings.fromJson(Map<String, dynamic> j) => StoreSettings(
@@ -151,6 +152,7 @@ class StoreSettings {
         deliverySlots: (j['deliverySlots'] as List? ?? []).map((e) => '$e').toList(),
         codEnabled: j['codEnabled'] != false,
         isStoreOpen: j['isStoreOpen'] != false,
+        onlinePaymentAvailable: j['onlinePaymentAvailable'] == true,
         supportPhone: j['supportPhone'] ?? '',
         supportEmail: j['supportEmail'] ?? '',
       );
@@ -355,7 +357,7 @@ class Order {
   final List<OrderItem> items;
   final Address? address;
   final double itemsTotal, mrpTotal, savings, couponDiscount, deliveryFee, handlingFee, grandTotal;
-  final String? couponCode, slotDate, slot, cancelReason;
+  final String? couponCode, slotDate, slot, cancelReason, paymentId, refundId;
   final DateTime createdAt;
   final List<StatusEvent> history;
   Order(
@@ -377,6 +379,8 @@ class Order {
       this.slotDate,
       this.slot,
       this.cancelReason,
+      this.paymentId,
+      this.refundId,
       required this.createdAt,
       this.history = const []});
   factory Order.fromJson(Map<String, dynamic> j) => Order(
@@ -398,6 +402,8 @@ class Order {
         slotDate: j['deliverySlot']?['date'],
         slot: j['deliverySlot']?['slot'],
         cancelReason: j['cancelReason'],
+        paymentId: j['razorpayPaymentId'],
+        refundId: j['refundId'],
         createdAt: DateTime.tryParse(j['createdAt'] ?? '')?.toLocal() ?? DateTime.now(),
         history: (j['statusHistory'] as List? ?? [])
             .map((h) => StatusEvent(h['status'] ?? '', h['note'], DateTime.tryParse(h['at'] ?? '')?.toLocal() ?? DateTime.now()))
@@ -425,6 +431,7 @@ class AppUser {
 }
 
 const orderStatusLabels = {
+  'payment_pending': 'Awaiting Payment',
   'placed': 'Order Placed',
   'confirmed': 'Confirmed',
   'packed': 'Packed',
