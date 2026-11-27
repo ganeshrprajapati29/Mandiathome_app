@@ -9,6 +9,7 @@
 | Part | Tech | Folder |
 |---|---|---|
 | Mobile app (Android + iOS) | Flutter, Provider | [`app/`](app) |
+| Customer storefront | React, Vite | [`website/`](website) |
 | REST API | Node.js, Express, MongoDB (Mongoose) | [`backend/`](backend) |
 | Admin panel (web) | Vanilla JS, served by the API at `/admin` | [`backend/public/admin`](backend/public/admin) |
 
@@ -83,6 +84,20 @@ npm run seed              # demo categories, products, banners, coupons and the 
 npm run dev
 ```
 
+### 🌐 Customer website (React + Vite)
+
+The storefront uses the same REST API and MongoDB data as the mobile app and admin panel. Start the backend in one terminal, then run the website in another:
+
+```bash
+cd website
+npm install
+npm run dev
+```
+
+Open `http://localhost:5173`. Vite proxies API and product-image requests to `http://localhost:6055` by default; set `VITE_API_PROXY_TARGET` if your backend uses another local address. Customer OTP login, server-side cart, addresses, coupons, orders and configured Razorpay checkout use the existing API.
+
+To build the storefront for the API server, run `npm run build` from `website/`. The backend serves the generated site at `/` while keeping the API at `/api` and admin panel at `/admin`. The VPS deploy script installs and builds the storefront automatically.
+
 ### Main API endpoints
 | Method | Path | Notes |
 |---|---|---|
@@ -109,11 +124,13 @@ Without `DOMAIN` it uses `mandiathome.<ip-with-dashes>.sslip.io`, for example `h
 
 ## 💳 Online payment (Razorpay)
 
-Flow: the app places an order → the backend creates a Razorpay order → the app opens Razorpay Checkout →
+Flow: the mobile app or React website places an order → the backend creates a Razorpay order → Razorpay Checkout opens →
 the backend verifies the payment signature (and checks the amount with Razorpay) → the order is confirmed.
 If the payment is cancelled or fails, stock is released and the cart is kept.
 Unpaid online orders are cancelled after 30 minutes.
 Cancelling a paid order (by the customer or the admin) refunds it automatically through Razorpay.
+
+The website reads payment availability and the public checkout key from the backend API. Keep `RAZORPAY_KEY_ID` and `RAZORPAY_KEY_SECRET` in `backend/.env` on the server only—never put the secret in Vite environment variables or frontend code. Enable online payments under Admin → Store Settings. Use HTTPS on the live domain (see [HTTPS setup](#https-ssl)).
 
 Add the keys on the VPS (they never go into the app or the repo):
 ```bash

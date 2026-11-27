@@ -107,6 +107,9 @@ fi
 log "Installing dependencies (clean)"
 rm -rf node_modules
 npm ci --omit=dev || npm install --omit=dev
+log "Building customer storefront"
+npm --prefix ../website ci
+npm --prefix ../website run build
 mkdir -p uploads
 
 # --- Port check: our port must be free (or used only by our own PM2 process) ---
@@ -135,6 +138,7 @@ for _ in $(seq 1 20); do curl -fsS "http://127.0.0.1:$P/api/health" >/dev/null &
 [ -n "$OK" ] && log "✅ API is live on port $P" || warn "API did not respond within 40 s — check: pm2 logs mandiathome-api --lines 40"
 echo
 echo "  API:    http://<server-ip>:$P/api"
+echo "  Store:  http://<server-ip>:$P/"
 echo "  Admin:  http://<server-ip>:$P/admin   (admin@mandiathome.com / Admin@123 — change it!)"
 if grep -q '^RAZORPAY_KEY_SECRET=..*' .env; then echo "  Pay:    Razorpay enabled ($(grep ^RAZORPAY_KEY_ID= .env | cut -d= -f2 | cut -c1-9)…)"; else echo "  Pay:    Razorpay not set (COD only). Add: RAZORPAY_KEY_ID=.. RAZORPAY_KEY_SECRET=.. bash deploy.sh"; fi
 if grep -q '^FAST2SMS_API_KEY=..*' .env; then echo "  OTP:    Fast2SMS enabled (OTP_DEV_MODE=$(grep ^OTP_DEV_MODE= .env | cut -d= -f2))"; else echo "  OTP:    test mode (shown in app). Add SMS: FAST2SMS_API_KEY=xxx bash deploy.sh"; fi

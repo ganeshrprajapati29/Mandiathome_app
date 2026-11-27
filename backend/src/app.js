@@ -20,6 +20,8 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads'), { maxAge:
 app.use('/catalog', express.static(path.join(__dirname, '../public/catalog'), { maxAge: '30d' }));
 app.use(['/delete-account', '/account-deletion'], express.static(path.join(__dirname, '../public/delete-account')));
 app.use('/admin', express.static(path.join(__dirname, '../public/admin')));
+const storefrontDir = path.join(__dirname, '../public/store');
+app.use(express.static(storefrontDir, { maxAge: process.env.NODE_ENV === 'production' ? '1h' : 0 }));
 
 const apiInfo = (req, res) => res.json({
   success: true,
@@ -39,6 +41,12 @@ app.use('/api/user', require('./routes/user'));
 app.use('/api/admin', require('./routes/admin'));
 app.use('/api/payments', require('./routes/payments'));
 app.use('/api', require('./routes/store'));
+
+app.get('*', (req, res, next) => {
+  const reservedPaths = ['/api', '/admin', '/uploads', '/catalog', '/delete-account', '/account-deletion'];
+  if (reservedPaths.some((prefix) => req.path === prefix || req.path.startsWith(`${prefix}/`))) return next();
+  res.sendFile(path.join(storefrontDir, 'index.html'), (error) => { if (error) next(); });
+});
 
 app.use(notFound);
 app.use(errorHandler);
